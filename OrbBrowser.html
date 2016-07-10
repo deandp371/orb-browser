@@ -1,0 +1,320 @@
+<html>
+<head>
+<link rel="stylesheet" href="jquery.dataTables.min.css">
+<script src="jquery-1.12.3.js"></script>	
+<script src="jquery.dataTables.min.js"></script>	
+<style>
+body {
+    background-color: white;
+}
+
+h1 {
+    color: maroon;
+    margin-left: 40px;
+} 
+
+table {
+    border-collapse: collapse;
+}
+
+table, th, td {
+    border: 1px solid black;
+    font-size: 11px;
+}
+
+</style>
+<script>
+
+// reject input line less then this value
+var LINE_MIN_LEN = 180;
+
+function readSingleFile(e) {
+  var elements = [];
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    lines = e.target.result.split(/\r?\n/);
+    displayLineCount(lines.length);
+    for(iline = 0; iline < lines.length; ++iline) {
+    	var nextLine = lines[iline];
+	if( nextLine.length < LINE_MIN_LEN ) {
+		continue;
+	}
+	//console.log("nextline=" + nextLine);
+	if( typeof nextLine !== 'undefined' ) {
+    		var elem = new element(nextLine);
+		elements[iline] = elem;
+		//var elemArray = buildElemArray(elem);
+		//elements[iline] = elemArray;
+	}
+    }
+	$('#elemTable').DataTable(
+		{
+			data: elements,
+			columns: [
+				{ data: "designationPacked" },
+				{ data: "H" },
+				{ data: "G" },
+				{ data: "epochPacked" },
+				{ data: "a" },
+				{ data: "e" },
+				{ data: "i" },
+				{ data: "node" },
+				{ data: "peri" },
+				{ data: "M" },
+				{ data: "n" },
+				{ data: "U" },
+				{ data: "reference" },
+				{ data: "nObservations" },
+				{ data: "nOppositions" },
+				{ data: "obsInfo" },
+				{ data: "residual" },
+				{ data: "perturbCoarse" },
+				{ data: "perturbPrecise" },
+				{ data: "flags" },
+				{ data: "orbitType" },
+				{ className: "select-filter", data: "neoFlag" },
+				{ data: "km1Flag" },
+				{ data: "opp1Flag" },
+				{ data: "critFlag" },
+				{ className: "select-filter", data: "phaFlag" },
+				{ data: "designation" },
+				{ data: "orbitDate" }
+			]
+		}
+	)
+	.columns( '.select-filter' ).every( function () {
+    var that = this;
+    // Create the select list and search operation
+    var select = $('<select />')
+        .appendTo(
+            this.footer()
+        )
+        .on( 'change', function () {
+            that
+                .search( $(this).val() )
+                .draw();
+        } );
+ 
+    // Get the search data for the first column and add to the select list
+    this
+        .cache( 'search' )
+        .sort()
+        .unique()
+        .each( function ( d ) {
+            select.append( $('<option value="'+d+'">'+d+'</option>') );
+        } );
+} );
+  };
+  reader.readAsText(file);
+
+}
+
+function element(line) {
+	//console.log(line);
+	this.designationPacked =line.slice(0,7).trim(); // designation in packed form text
+	this.H = Number(line.slice(8,13));              // absolute magnitude, H numeric
+	this.G = Number(line.slice(14,19));             // slope parameter, G numeric
+	this.epochPacked = line.slice(20,25).trim();    // epoch packed - text
+	
+	this.M = Number(line.slice(26,35));             // mean anomoly numeric
+	this.peri = Number(line.slice(37,46));          // Argument of perihelion, numeric
+	this.node = Number(line.slice(48,57));          // Longitude of the ascending node, numeric
+	this.i = Number(line.slice(59,68));   // Inclination to the ecliptic, numeric
+	
+	this.e = Number(line.slice(70,79));   // Orbital eccentricity, numeric
+	this.n = Number(line.slice(80,91));   // mean daily motion, numeric
+	this.a = Number(line.slice(92,103));   // semimajor axis, numeric
+	
+	this.U = line.slice(105,106);   // uncertainty parameter - text
+
+	this.reference = line.slice(107,116);   // reference - text
+	
+	this.nObservations = Number(line.slice(117,122));   // Number of observations, numeric
+	this.nOppositions = Number(line.slice(123,126));   // Number of oppositions, numeric
+	
+	this.obsInfo = line.slice(127,136);   // first and last obs or number of days
+	
+	this.residual = Number(line.slice(137,141));   // residual RMS, numeric
+
+	this.perturbCoarse = line.slice(142,145);   // Coarse indicator of perturbers - text
+	this.perturbPrecise = line.slice(146,149);   // Precise indicator of perturbers - text
+
+	this.flags = line.slice(161,165);   // Precise indicator of perturbers - text
+	this.orbitType = getOrbitType(this.flags);
+	this.neoFlag = isNEO(this.flags);
+	this.km1Flag = is1KM(this.flags);
+	this.opp1Flag = is1Opp(this.flags);
+	this.critFlag = isCrit(this.flags);
+	this.phaFlag = isPHA(this.flags);
+	
+	this.designation = line.slice(166,194);   // Readable designation - text
+	this.orbitDate = line.slice(194,202);   // Date last obs incl in orbit solution - text
+
+}
+
+// return the orbit type from the hex flags value lower 5 bits
+
+function getOrbitType(flags) {
+var typeVal = parseInt(flags,16) & 0x1F;
+var typeNames = [
+	"Unassigned",
+	"Atir",
+        "Aten",
+        "Apollo",
+        "Amor",
+        "Object with q < 1.665 AU",
+        "Hungaria",
+        "Phocaea",
+        "Hilda",
+        "Jupiter Trojan",
+        "Distant object"
+	];
+var returnType = (typeVal <= 10) ? typeNames[typeVal] : "";
+return returnType;
+}
+
+// return the NEO flag from the hex flags bit 11
+
+function isNEO(flags) {
+var typeVal = parseInt(flags,16) & 0x0800;
+var returnType = (typeVal > 0) ? "NEO" : "";
+return returnType;
+}
+
+// return the 1km flag from the hex flags bit 12
+
+function is1KM(flags) {
+var typeVal = parseInt(flags,16) & 0x1000;
+var returnType = (typeVal > 0) ? "1KM" : "";
+return returnType;
+}
+
+// return the 1 opposition flag from the hex flags bit 13
+
+function is1Opp(flags) {
+var typeVal = parseInt(flags,16) & 0x2000;
+var returnType = (typeVal > 0) ? "1OPP" : "";
+return returnType;
+}
+
+// return the critical list flag from the hex flags bit 14
+
+function isCrit(flags) {
+var typeVal = parseInt(flags,16) & 0x4000;
+var returnType = (typeVal > 0) ? "CRIT" : "";
+return returnType;
+}
+
+// return the PHA flag from the hex flags bit 15
+
+function isPHA(flags) {
+var typeVal = parseInt(flags,16) & 0x8000;
+var returnType = (typeVal > 0) ? "PHA" : "";
+return returnType;
+}
+
+function buildElemArray(elem) {
+	//console.log(line);
+	var elemArray = [];
+	elemArray[0] = elem.designationPacked;
+	elemArray[1] = elem.H;
+	elemArray[2] = elem.G;
+	return elemArray;
+}
+
+// adds the element fields to a given table row
+
+function buildRow(row, elem) {
+}
+	
+function displayLineCount(count) {
+  var element = document.getElementById('lineCount');
+  element.innerHTML = count;
+}
+
+function init() {
+document.getElementById('file-input')
+  .addEventListener('change', readSingleFile, false);
+}
+
+</script>
+</head>
+<body onload="init()">
+<input type="file" id="file-input" />
+<h3>Line Count:</h3>
+<p id="lineCount"></p>
+<h3>Contents of the file:</h3>
+<pre id="file-content"></pre>
+<h3>The Table</h3>
+<table id="elemTable" class="display" width="100%">
+	<thead>
+	<tr>
+		<th>Packed Desig</th>
+		<th>H</th>
+		<th>G</th>
+		<th>Epoch</th>
+		<th>a</th>
+		<th>e</th>
+		<th>i</th>
+		<th>Node</th>
+		<th>Peri</th>
+		<th>M</th>
+		<th>n</th>
+		<th>U</th>
+		<th>Ref</th>
+		<th>Num_obs</th>
+		<th>Num_opps</th>
+		<th>Arc Yrs/Len</th>
+		<th>rms</th>
+		<th>Perturbers</th>
+		<th>Perturbers_2</th>
+		<th>Hex_flags</th>
+		<th>Orbit_type</th>
+		<th>NEO_flag</th>
+		<th>One_km_flag</th>
+		<th>One_opp_flag</th>
+		<th>Crit_flag</th>
+		<th>PHA_flag</th>
+		<th>Designation</th>
+		<th>Last_obs</th>
+	</tr>
+	</thead>
+	<tfoot>
+	<tr>
+		<th>Packed Desig</th>
+		<th>H</th>
+		<th>G</th>
+		<th>Epoch</th>
+		<th>a</th>
+		<th>e</th>
+		<th>i</th>
+		<th>Node</th>
+		<th>Peri</th>
+		<th>M</th>
+		<th>n</th>
+		<th>U</th>
+		<th>Ref</th>
+		<th>Num_obs</th>
+		<th>Num_opps</th>
+		<th>Arc Yrs/Len</th>
+		<th>rms</th>
+		<th>Perturbers</th>
+		<th>Perturbers_2</th>
+		<th>Hex_flags</th>
+		<th>Orbit_type</th>
+		<th class="category">NEO_flag</th>
+		<th>One_km_flag</th>
+		<th>One_opp_flag</th>
+		<th>Crit_flag</th>
+		<th>PHA_flag</th>
+		<th>Designation</th>
+		<th>Last_obs</th>
+	</tr>
+	</tfoot>
+</table>
+</body> 
+</html>
