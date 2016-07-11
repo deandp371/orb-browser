@@ -28,15 +28,59 @@ h1 {
     margin-left: 40px;
 } 
 
+div.header {
+    font-family: Ariel, sans-serif;
+    font-weight: bold;
+}
+
+div.info {
+    font-family: Ariel, sans-serif;
+    font-weight: normal;
+}
+
+p.header {
+    font-family: Ariel, sans-serif;
+    font-weight: bold;
+}
+
+p.info {
+    font-family: Ariel, sans-serif;
+    font-weight: normal;
+}
 table {
     border-collapse: collapse;
 }
 
 table, th, td {
     border: 1px solid black;
-    font-size: 11px;
+    font-size: 10px;
 }
-
+#header {
+    background-color:black;
+    color:white;
+    text-align:center;
+    padding:5px;
+}
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height:400px;
+    width:100px;
+    float:left;
+    padding:5px; 
+}
+#section {
+    width:350px;
+    float:left;
+    padding:10px; 
+}
+#footer {
+    background-color:black;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px; 
+}
 </style>
 <script>
 
@@ -251,15 +295,31 @@ document.getElementById('file-input')
   .addEventListener('change', readSingleFile, false);
 }
 
+$( document ).ready(function() {
+	init();
+});
 </script>
 </head>
-<body onload="init()">
-<input type="file" id="file-input" />
-<h3>Line Count:</h3>
-<p id="lineCount"></p>
-<h3>Contents of the file:</h3>
-<pre id="file-content"></pre>
-<h3>The Table</h3>
+<body>
+
+<div id="header" class="header">
+Orb Browser
+</div>
+
+<div id="nav">
+<div id="navAbout">About</div>
+</div>
+
+<div id="section">
+
+  <div id="about">
+  </div>
+  <div id="loadFile">
+  <input type="file" id="file-input" />
+    <p class="header">Line Count:</p>
+    <p id="lineCount" class="info"></p>
+  </div>
+  <div id="orbBrowser">
 <table id="elemTable" class="display" width="100%">
 	<thead>
 	<tr>
@@ -325,6 +385,10 @@ document.getElementById('file-input')
 		<th>Last_obs</th>
 	</tr>
 	</tfoot>
-</table>
+</table>  </div>
+</div>
+<div id="footer">
+Copyright © near-earth.net
+</div>
 </body> 
 </html>
