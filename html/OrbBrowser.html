@@ -42,6 +42,7 @@ table, th, td {
 
 // reject input line less then this value
 var LINE_MIN_LEN = 180;
+var tableLoaded = false;
 
 function readSingleFile(e) {
   var elements = [];
@@ -55,19 +56,24 @@ function readSingleFile(e) {
     displayLineCount(lines.length);
     for(iline = 0; iline < lines.length; ++iline) {
     	var nextLine = lines[iline];
-	if( nextLine.length < LINE_MIN_LEN ) {
-		continue;
-	}
-	//console.log("nextline=" + nextLine);
-	if( typeof nextLine !== 'undefined' ) {
+		if( nextLine.length < LINE_MIN_LEN ) {
+			continue;
+		}
+		//console.log("nextline=" + nextLine);
+		if( typeof nextLine !== 'undefined' ) {
     		var elem = new element(nextLine);
-		elements[iline] = elem;
-		//var elemArray = buildElemArray(elem);
-		//elements[iline] = elemArray;
-	}
+			elements[iline] = elem;
+		}
     }
-	$('#elemTable').DataTable(
+    //var orbitTable = $('#elemTable').DataTable();
+    if( tableLoaded == true ) {
+    	console.log("reset the table");
+    	orbitTable.clear().rows.add(elements).draw()
+    }
+    else {
+		orbitTable = $('#elemTable').DataTable(
 		{
+			retrieve: true,
 			data: elements,
 			columns: [
 				{ data: "designationPacked" },
@@ -90,11 +96,11 @@ function readSingleFile(e) {
 				{ data: "perturbCoarse" },
 				{ data: "perturbPrecise" },
 				{ data: "flags" },
-				{ data: "orbitType" },
+				{ className: "select-filter", data: "orbitType" },
 				{ className: "select-filter", data: "neoFlag" },
-				{ data: "km1Flag" },
-				{ data: "opp1Flag" },
-				{ data: "critFlag" },
+				{ className: "select-filter",data: "km1Flag" },
+				{ className: "select-filter",data: "opp1Flag" },
+				{ className: "select-filter",data: "critFlag" },
 				{ className: "select-filter", data: "phaFlag" },
 				{ data: "designation" },
 				{ data: "orbitDate" }
@@ -104,7 +110,8 @@ function readSingleFile(e) {
 	.columns( '.select-filter' ).every( function () {
     var that = this;
     // Create the select list and search operation
-    var select = $('<select />')
+    //var select = $('<select />')
+    var select = $('<select><option value=""></option></select>')
         .appendTo(
             this.footer()
         )
@@ -123,6 +130,8 @@ function readSingleFile(e) {
             select.append( $('<option value="'+d+'">'+d+'</option>') );
         } );
 } );
+    }
+	tableLoaded = true;
   };
   reader.readAsText(file);
 
@@ -196,7 +205,7 @@ return returnType;
 
 function isNEO(flags) {
 var typeVal = parseInt(flags,16) & 0x0800;
-var returnType = (typeVal > 0) ? "NEO" : "";
+var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 
@@ -204,7 +213,7 @@ return returnType;
 
 function is1KM(flags) {
 var typeVal = parseInt(flags,16) & 0x1000;
-var returnType = (typeVal > 0) ? "1KM" : "";
+var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 
@@ -212,7 +221,7 @@ return returnType;
 
 function is1Opp(flags) {
 var typeVal = parseInt(flags,16) & 0x2000;
-var returnType = (typeVal > 0) ? "1OPP" : "";
+var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 
@@ -220,7 +229,7 @@ return returnType;
 
 function isCrit(flags) {
 var typeVal = parseInt(flags,16) & 0x4000;
-var returnType = (typeVal > 0) ? "CRIT" : "";
+var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 
@@ -228,22 +237,8 @@ return returnType;
 
 function isPHA(flags) {
 var typeVal = parseInt(flags,16) & 0x8000;
-var returnType = (typeVal > 0) ? "PHA" : "";
+var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
-}
-
-function buildElemArray(elem) {
-	//console.log(line);
-	var elemArray = [];
-	elemArray[0] = elem.designationPacked;
-	elemArray[1] = elem.H;
-	elemArray[2] = elem.G;
-	return elemArray;
-}
-
-// adds the element fields to a given table row
-
-function buildRow(row, elem) {
 }
 	
 function displayLineCount(count) {
@@ -321,7 +316,7 @@ document.getElementById('file-input')
 		<th>Perturbers_2</th>
 		<th>Hex_flags</th>
 		<th>Orbit_type</th>
-		<th class="category">NEO_flag</th>
+		<th>NEO_flag</th>
 		<th>One_km_flag</th>
 		<th>One_opp_flag</th>
 		<th>Crit_flag</th>
