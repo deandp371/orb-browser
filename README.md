@@ -1,5 +1,5 @@
 # orb-browser
-Minor planet orbit browser implemented in HTML and Javascript. The utility allows a user to input a file containing orbits in the IAU Minor Planet Center (MPC) and browse, filter and export the entries in the MPCORB or other formats.
+Minor planet orbit browser implemented in HTML and Javascript. The utility allows a user to input a file containing minor planet orbits in the IAU Minor Planet Center (MPC) export format and browse, filter and export the entries in the MPCORB or other formats.
 
 The utility can be loaded into any current browser supporting Javascript, so no additional software is required. It is not currently practical to load the entire MPCORB database into the browser but published subsets such as the NEA elements (NEA.txt) can be loaded, browsed and filtered to explore the data or produce subsets of interest for obesrvation or other research.
 
