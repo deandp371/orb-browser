@@ -8,26 +8,39 @@ filter and export the entries in the MPCORB or other formats.
 Author: David P Dean
 Contact: deandp371@gmail.com
 Version: 0.5 beta
-Date: 2016-07-11
+Date: 2016-07-14
 License: Open Source under the Apache 2.0 License
 Demo site: TBD
 Source Code: GitHub project orb-browser
 -->
 <html>
 <head>
+<meta charset="ISO-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/jquery.dataTables.min.css">
 <script src="js/jquery-1.12.3.js"></script>	
-<script src="js/jquery.dataTables.min.js"></script>	
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
 <style>
 body {
-    background-color: white;
+    font-family: Ariel, sans-serif;
+    background-color:midnightblue;
+    color:white;
 }
-
 h1 {
     color: maroon;
     margin-left: 40px;
 } 
-
+h2 {
+    font-size: 2.0em;
+}
+p.info {
+    font-size: 1.2em;
+}
+p.norm {
+    font-size: 1.0em;
+}
 div.header {
     font-family: Ariel, sans-serif;
     font-weight: bold;
@@ -43,36 +56,30 @@ p.header {
     font-weight: bold;
 }
 
-p.info {
-    font-family: Ariel, sans-serif;
-    font-weight: normal;
+div.ob {
+	color: midnightblue;
+	background-color: white;
 }
+
 table {
     border-collapse: collapse;
 }
 
 table, th, td {
+	color: black;
     border: 1px solid black;
     font-size: 10px;
 }
 #header {
-    background-color:black;
-    color:white;
     text-align:center;
     padding:5px;
 }
-#nav {
-    line-height:30px;
-    background-color:#eeeeee;
-    height:400px;
-    width:100px;
-    float:left;
-    padding:5px; 
-}
 #section {
-    width:350px;
     float:left;
     padding:10px; 
+    margin-left: 5%;
+    margin-right: 5%; 
+    margin-bottom: 5%;     
 }
 #footer {
     background-color:black;
@@ -87,6 +94,7 @@ table, th, td {
 // reject input line less then this value
 var LINE_MIN_LEN = 180;
 var tableLoaded = false;
+var filteredData;
 
 function readSingleFile(e) {
   var elements = [];
@@ -151,6 +159,11 @@ function readSingleFile(e) {
 			]
 		}
 	)
+	.on('search', function() {
+		var rowCount = orbitTable.rows({order:'index', search:'applied'}).data().length;
+		console.log('table search row cnt=' + rowCount);
+		filteredData = orbitTable.rows({order:'index', search:'applied'}).data();
+	})
 	.columns( '.select-filter' ).every( function () {
     var that = this;
     // Create the select list and search operation
@@ -179,10 +192,12 @@ function readSingleFile(e) {
   };
   reader.readAsText(file);
 
+  displayOb();
 }
 
 function element(line) {
 	//console.log(line);
+	this.line = line;
 	this.designationPacked =line.slice(0,7).trim(); // designation in packed form text
 	this.H = Number(line.slice(8,13));              // absolute magnitude, H numeric
 	this.G = Number(line.slice(14,19));             // slope parameter, G numeric
@@ -221,7 +236,12 @@ function element(line) {
 	
 	this.designation = line.slice(166,194);   // Readable designation - text
 	this.orbitDate = line.slice(194,202);   // Date last obs incl in orbit solution - text
-
+	
+	this.toTSV = function() {
+		return this.designationPacked + "\t"
+			+ this.G + "\t"
+			+ this.H
+	}
 }
 
 // return the orbit type from the hex flags value lower 5 bits
@@ -286,13 +306,55 @@ return returnType;
 }
 	
 function displayLineCount(count) {
-  var element = document.getElementById('lineCount');
-  element.innerHTML = count;
+  $('#lineCount').html(count);
 }
 
 function init() {
-document.getElementById('file-input')
-  .addEventListener('change', readSingleFile, false);
+	// show the home div by default and re-show it when Home is clicked
+	$('#navHome').click(function(){
+		// toggle the nav buttons
+	    $('#navHome').addClass('active');
+	    $('#navOrbBrowser').removeClass('active');
+	    
+	    displayHome();
+	});	
+	
+	// hide the table by default and show it when 
+	$('#navOrbBrowser').click(function(){
+		
+	    $('#navOrbBrowser').addClass('active');
+	    $('#navHome').removeClass('active');
+	    
+	    displayOb();
+	});	
+	
+	
+    document.getElementById('file-input')
+  		.addEventListener('change', readSingleFile, false);
+    
+    $( "#downloadTsv" ).click(function() {
+    	  console.log( "Handler for .click() called." );
+  		if( typeof filteredData !== 'undefined' ) {
+  			for (var i = 0; i < filteredData.length; i++) {
+  				console.log("row " + i + " desig=" + filteredData[i].toTSV());
+  			}
+  		}
+    });
+    
+	// display home to start
+	displayHome();
+
+}
+
+function displayHome() {
+    $('#divHome').show();
+    $('#divOrbBrowser').hide();
+	
+}
+
+function displayOb() {
+    $('#divHome').hide();
+    $('#divOrbBrowser').show();
 }
 
 $( document ).ready(function() {
@@ -301,25 +363,38 @@ $( document ).ready(function() {
 </script>
 </head>
 <body>
-
-<div id="header" class="header">
-Orb Browser
-</div>
-
-<div id="nav">
-<div id="navAbout">About</div>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">Table Demo</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li class="active" id="navHome"><a href="#">Home</a></li>
+      <li><a id="navOrbBrowser" href="#">Orb Browser</a></li>
+      <li><a href="#">More Info</a></li> 
+    </ul>
+  </div>
+</nav>
+<div id="header">
 </div>
 
 <div id="section">
 
-  <div id="about">
+  <div id="divHome">
+  <p class="info">OrbBrowser is a minor planet orbit browser implemented in HTML and Javascript. 
+The utility allows a user to input a file containing minor orbits in the IAU Minor Planet Center
+(MPC) export format and browse, filter and export the entries in the MPCORB or other formats.</p>
+
+<p class="norm">Select a local uncompressed file in the MPCOrb format. Note that the
+entire MPCOrb database will be too large to load in a client-side browser app but a 
+subset such as NEA.txt will work fine. Select "More Info" above for more details
+and links to example files</p>
+<br>
+<input type="file" id="file-input" />&nbsp;
+<br>
+Line Count:</p>&nbsp;<div id="lineCount" class="info"></div>
   </div>
-  <div id="loadFile">
-  <input type="file" id="file-input" />
-    <p class="header">Line Count:</p>
-    <p id="lineCount" class="info"></p>
-  </div>
-  <div id="orbBrowser">
+  <div id="divOrbBrowser" class="ob">
 <table id="elemTable" class="display" width="100%">
 	<thead>
 	<tr>
@@ -385,10 +460,15 @@ Orb Browser
 		<th>Last_obs</th>
 	</tr>
 	</tfoot>
-</table>  </div>
+</table>
+<br>
+<p class="norm">
+Select "Home" to load a new file or export the entire or filtered data set by selecting one of the following:</p>
+<button type="button" id="downloadTsv">Download TSV</button>
+</div>
 </div>
 <div id="footer">
-Copyright © near-earth.net
+<p class="info">Copyright © near-earth.net. Hosted in Amazon S3</p>
 </div>
 </body> 
 </html>
