@@ -41,6 +41,9 @@ p.info {
 p.norm {
     font-size: 1.0em;
 }
+input[type=file] { 
+	width: 200px; 
+}
 div.header {
     font-family: Ariel, sans-serif;
     font-weight: bold;
@@ -50,16 +53,26 @@ div.info {
     font-family: Ariel, sans-serif;
     font-weight: normal;
 }
-
+div.formGroup {
+	display:table;
+}
+div.formElem {
+	display:table-cell;
+}
+div.ob {
+	color: midnightblue;
+	background-color: white;
+}
+select.obSelect {
+	color: midnightblue;
+	background-color: white;
+}
 p.header {
     font-family: Ariel, sans-serif;
     font-weight: bold;
 }
 
-div.ob {
-	color: midnightblue;
-	background-color: white;
-}
+
 
 table {
     border-collapse: collapse;
@@ -105,7 +118,7 @@ function readSingleFile(e) {
   var reader = new FileReader();
   reader.onload = function(e) {
     lines = e.target.result.split(/\r?\n/);
-    displayLineCount(lines.length);
+    //displayLineCount(lines.length);
     for(iline = 0; iline < lines.length; ++iline) {
     	var nextLine = lines[iline];
 		if( nextLine.length < LINE_MIN_LEN ) {
@@ -239,8 +252,33 @@ function element(line) {
 	
 	this.toTSV = function() {
 		return this.designationPacked + "\t"
+			+ this.H + "\t"
 			+ this.G + "\t"
-			+ this.H
+			+ this.epochPacked + "\t"
+			+ this.a + "\t"
+			+ this.e + "\t"
+			+ this.i + "\t"
+			+ this.node + "\t"
+			+ this.peri + "\t"
+			+ this.M + "\t"
+			+ this.n + "\t"
+			+ this.U + "\t"
+			+ this.reference + "\t"
+			+ this.nObservations + "\t"
+			+ this.nOppositions + "\t"
+			+ this.obsInfo + "\t"
+			+ this.residual + "\t"
+			+ this.perturbCoarse + "\t"
+			+ this.perturbPrecise + "\t"
+			+ this.flags + "\t"
+			+ this.orbitType + "\t"
+			+ this.neoFlag + "\t"
+			+ this.km1Flag + "\t"
+			+ this.opp1Flag + "\t"
+			+ this.critFlag + "\t"
+			+ this.phaFlag + "\t"
+			+ this.designation + "\t"
+			+ this.orbitDate;
 	}
 }
 
@@ -305,9 +343,9 @@ var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 	
-function displayLineCount(count) {
-  $('#lineCount').html(count);
-}
+//function displayLineCount(count) {
+//  $('#lineCount').val(count);
+//}
 
 function init() {
 	// show the home div by default and re-show it when Home is clicked
@@ -334,10 +372,24 @@ function init() {
     
     $( "#downloadTsv" ).click(function() {
     	  console.log( "Handler for .click() called." );
+  		var tab = "\t";
+  		
+		var tsvData = 
+			"Packed Desig" +tab + "H" +tab + "G" +tab + "Epoch" +tab +
+			"a" +tab + "e" +tab + "i" +tab + "Node" +tab +
+			"Peri" +tab + "M" +tab + "n" +tab + "U" +tab +
+			"Ref" +tab + "Num_obs" +tab + "Num_opps" +tab + "Arc Yrs/Len" +tab +
+			"rms" +tab + "Perturbers" +tab + "Perturbers_2" +tab + "Hex_flags" +tab +
+			"Orbit_type" +tab + "NEO_flag" +tab + "One_km_flag" +tab + "One_opp_flag" +tab +
+			"Crit_flag" +tab + "PHA_flag" +tab + "Designation" +tab + "Last_obs" +tab + "\n";
+
   		if( typeof filteredData !== 'undefined' ) {
+  			console.log("download tsv row count=" + filteredData.length);
   			for (var i = 0; i < filteredData.length; i++) {
-  				console.log("row " + i + " desig=" + filteredData[i].toTSV());
+				tsvData += filteredData[i].toTSV();
+				tsvData += "\n";
   			}
+  			download_file(tsvData, "orbBrowser.txt");
   		}
     });
     
@@ -357,6 +409,25 @@ function displayOb() {
     $('#divOrbBrowser').show();
 }
 
+function download_file(fileData, filename) {
+	var blob = new Blob([fileData], { type: 'text/plain;charset=utf-8;' });
+    if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, filename);
+    } else {
+        var link = document.createElement("a");
+        if (link.download !== undefined) { // feature detection
+            // Browsers that support HTML5 download attribute
+            var url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+}
+
 $( document ).ready(function() {
 	init();
 });
@@ -366,7 +437,7 @@ $( document ).ready(function() {
 <nav class="navbar navbar-inverse">
   <div class="container-fluid">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">Table Demo</a>
+      <a class="navbar-brand" href="#">OrbBrowser</a>
     </div>
     <ul class="nav navbar-nav">
       <li class="active" id="navHome"><a href="#">Home</a></li>
@@ -389,12 +460,23 @@ The utility allows a user to input a file containing minor orbits in the IAU Min
 entire MPCOrb database will be too large to load in a client-side browser app but a 
 subset such as NEA.txt will work fine. Select "More Info" above for more details
 and links to example files</p>
-<br>
-<input type="file" id="file-input" />&nbsp;
-<br>
-Line Count:</p>&nbsp;<div id="lineCount" class="info"></div>
+<div class="formGroup">
+  <div class="formElem">
+    <input type="file" id="file-input" />
   </div>
-  <div id="divOrbBrowser" class="ob">
+  <!--
+  <div class="formElem">
+  	<input type=number id="lineCount" disabled/>
+   </div>
+   -->
+  <div class="formElem">
+    <select class="obSelect">
+      <option value="mpc-classic" selected>MPC Minor Planet Format</option>
+   </select>
+   </div>
+</div>
+</div>
+<div id="divOrbBrowser" class="ob">
 <table id="elemTable" class="display" width="100%">
 	<thead>
 	<tr>
