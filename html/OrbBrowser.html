@@ -152,7 +152,7 @@ function readSingleFile(e) {
 				{ data: "peri" },
 				{ data: "M" },
 				{ data: "n" },
-				{ data: "U" },
+				{ className: "range-filter", data: "U" },
 				{ data: "reference" },
 				{ data: "nObservations" },
 				{ data: "nOppositions" },
@@ -171,12 +171,12 @@ function readSingleFile(e) {
 				{ data: "orbitDate" }
 			]
 		}
-	)
+	) // end table ctor
 	.on('search', function() {
 		var rowCount = orbitTable.rows({order:'index', search:'applied'}).data().length;
 		console.log('table search row cnt=' + rowCount);
 		filteredData = orbitTable.rows({order:'index', search:'applied'}).data();
-	})
+	}) // end 'on'
 	.columns( '.select-filter' ).every( function () {
     var that = this;
     // Create the select list and search operation
@@ -199,13 +199,43 @@ function readSingleFile(e) {
         .each( function ( d ) {
             select.append( $('<option value="'+d+'">'+d+'</option>') );
         } );
-} );
-    }
+} );  // end select-filter
+
+	} // end else
 	tableLoaded = true;
   };
+  
+  // external search routine for filter search
+  $.fn.dataTable.ext.search.push(
+    	function( settings, data, dataIndex ) {
+    		var result = filterResult($('#uMin').val(), $('#uMax').val(), data);
+            return result;
+        }
+  );
+  
+  $('#uMin,#uMax').keyup( function() {
+	  orbitTable.draw();
+  } );
+  
   reader.readAsText(file);
 
   displayOb();
+}
+
+function filterResult(min, max, rowData) {
+	var result = false;
+    var min = $('#uMin').val() * 1;
+    var max = $('#uMax').val() * 1;
+    var val = parseFloat( rowData[11] ) || -1; // U column
+
+    if ( ( min == '' && max == '' ) ||
+         ( min == '' && age <= max ) ||
+         ( min <= val && '' == max ) ||
+         ( min <= val && val <= max ) )
+    {
+        result = true;
+    }
+    return result;	
 }
 
 function element(line) {
@@ -371,7 +401,6 @@ function init() {
   		.addEventListener('change', readSingleFile, false);
     
     $( "#downloadTsv" ).click(function() {
-    	  console.log( "Handler for .click() called." );
   		var tab = "\t";
   		
 		var tsvData = 
@@ -389,10 +418,23 @@ function init() {
 				tsvData += filteredData[i].toTSV();
 				tsvData += "\n";
   			}
-  			download_file(tsvData, "orbBrowser.txt");
+  			download_file(tsvData, "tsv-export.txt");
   		}
     });
-    
+
+    $( "#downloadMpc" ).click(function() {
+
+  		if( typeof filteredData !== 'undefined' ) {
+  			console.log("download mpc row count=" + filteredData.length);
+  			var mpcData = "";
+  			for (var i = 0; i < filteredData.length; i++) {
+  				mpcData += filteredData[i].line;
+  				mpcData += "\n";
+  			}
+  			download_file(mpcData, "mpc-export.txt");
+  		}
+    });
+
 	// display home to start
 	displayHome();
 
@@ -523,7 +565,11 @@ and links to example files</p>
 		<th>Peri</th>
 		<th>M</th>
 		<th>n</th>
-		<th>U</th>
+		<th>
+		  &ge;<input type="number" id="uMin"></input>
+		  &le;<input type="number" id="uMax"></input>
+		</th>
+		
 		<th>Ref</th>
 		<th>Num_obs</th>
 		<th>Num_opps</th>
@@ -546,7 +592,8 @@ and links to example files</p>
 <br>
 <p class="norm">
 Select "Home" to load a new file or export the entire or filtered data set by selecting one of the following:</p>
-<button type="button" id="downloadTsv">Download TSV</button>
+<button type="button" id="downloadMpc">Export MPC Format</button>
+<button type="button" id="downloadTsv">Export TSV</button>
 </div>
 </div>
 <div id="footer">
