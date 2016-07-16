@@ -219,7 +219,9 @@ function readSingleFile(e) {
     			filterResult($('#nMin').val(), $('#nMax').val(), data[10]) &&
     			filterResult($('#uMin').val(), $('#uMax').val(), data[11]) &&
 			    filterResult($('#nobsMin').val(), $('#nobsMax').val(), data[13]) &&
-			    filterResult($('#noppsMin').val(), $('#noppsMax').val(), data[14]);
+			    filterResult($('#noppsMin').val(), $('#noppsMax').val(), data[14]) &&
+		    	filterResult($('#rmsMin').val(), $('#rmsMax').val(), data[16]) &&
+	    		filterResult($('#lobsMin').val(), $('#lobsMax').val(), data[27]);
             return result;
         }
   );
@@ -619,7 +621,8 @@ and links to example files</p>
 		Arc Yrs/Len
 		</th>
 		<th>
-		rms
+		  &ge;<input type="number" id="rmsMin" class="ranger"></input>
+		  &le;<input type="number" id="rmsMax" class="ranger"></input>
 		</th>
 		<th>Perturbers</th>
 		<th>Perturbers_2</th>
@@ -631,7 +634,10 @@ and links to example files</p>
 		<th>Crit_flag</th>
 		<th>PHA_flag</th>
 		<th>Designation</th>
-		<th>Last_obs</th>
+		<th>
+		  &ge;<input type="number" id="lobsMin" class="ranger"></input>
+		  &le;<input type="number" id="lobsMax" class="ranger"></input>
+		</th>
 	</tr>
 	</tfoot>
 </table>
