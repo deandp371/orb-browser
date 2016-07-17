@@ -110,7 +110,7 @@ var tableLoaded = false;
 var filteredData;
 
 function readSingleFile(e) {
-  var elements = [];
+  var orbits = [];
   var file = e.target.files[0];
   if (!file) {
     return;
@@ -127,14 +127,14 @@ function readSingleFile(e) {
 		}
 		//console.log("nextline=" + nextLine);
 		if( typeof nextLine !== 'undefined' ) {
-    		var elem = new element(nextLine);
-			elements[iline] = elem;
+    		var elem = new orbit(nextLine);
+			orbits[iline] = elem;
 		}
     }
     //var orbitTable = $('#elemTable').DataTable();
     if( tableLoaded == true ) {
     	console.log("reset the table");
-    	//orbitTable.clear().rows.add(elements).draw();
+    	//orbitTable.clear().rows.add(orbits).draw();
     	orbitTable.destroy();
     	$( "th.select-filter" ).html("");
     }
@@ -142,7 +142,7 @@ function readSingleFile(e) {
 	{
 		processing: true,
 		retrieve: true,
-		data: elements,
+		data: orbits,
 		columns: [
 			{ data: "designationPacked" },
 			{ data: "H" },
@@ -233,12 +233,9 @@ function readSingleFile(e) {
 	  orbitTable.draw();
   } );
 
-  //$('#uMin,#uMax').keyup( function() {
-//	  orbitTable.draw();
-//  } );
   reader.readAsText(file);
 
-  displayOb();
+  displayOb(true);
 }
 
 function filterResult(min, max, rowValue) {
@@ -255,7 +252,7 @@ function filterResult(min, max, rowValue) {
     return result;	
 }
 
-function element(line) {
+function orbit(line) {
 	//console.log(line);
 	this.line = line;
 	this.designationPacked =line.slice(0,7).trim(); // designation in packed form text
@@ -332,8 +329,8 @@ function element(line) {
 // return the orbit type from the hex flags value lower 5 bits
 
 function getOrbitType(flags) {
-var typeVal = parseInt(flags,16) & 0x1F;
-var typeNames = [
+  var typeVal = parseInt(flags,16) & 0x1F;
+  var typeNames = [
 	"Unassigned",
 	"Atir",
         "Aten",
@@ -346,48 +343,48 @@ var typeNames = [
         "Jupiter Trojan",
         "Distant object"
 	];
-var returnType = (typeVal <= 10) ? typeNames[typeVal] : "";
-return returnType;
+  var returnType = (typeVal <= 10) ? typeNames[typeVal] : "";
+  return returnType;
 }
 
 // return the NEO flag from the hex flags bit 11
 
 function isNEO(flags) {
-var typeVal = parseInt(flags,16) & 0x0800;
-var returnType = (typeVal > 0) ? 1 : 0;
-return returnType;
+  var typeVal = parseInt(flags,16) & 0x0800;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
 }
 
 // return the 1km flag from the hex flags bit 12
 
 function is1KM(flags) {
-var typeVal = parseInt(flags,16) & 0x1000;
-var returnType = (typeVal > 0) ? 1 : 0;
-return returnType;
+  var typeVal = parseInt(flags,16) & 0x1000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
 }
 
 // return the 1 opposition flag from the hex flags bit 13
 
 function is1Opp(flags) {
-var typeVal = parseInt(flags,16) & 0x2000;
-var returnType = (typeVal > 0) ? 1 : 0;
-return returnType;
+  var typeVal = parseInt(flags,16) & 0x2000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
 }
 
 // return the critical list flag from the hex flags bit 14
 
 function isCrit(flags) {
-var typeVal = parseInt(flags,16) & 0x4000;
-var returnType = (typeVal > 0) ? 1 : 0;
+  var typeVal = parseInt(flags,16) & 0x4000;
+  var returnType = (typeVal > 0) ? 1 : 0;
 return returnType;
 }
 
 // return the PHA flag from the hex flags bit 15
 
 function isPHA(flags) {
-var typeVal = parseInt(flags,16) & 0x8000;
-var returnType = (typeVal > 0) ? 1 : 0;
-return returnType;
+  var typeVal = parseInt(flags,16) & 0x8000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
 }
 	
 //function displayLineCount(count) {
@@ -399,6 +396,7 @@ function init() {
 	$('#navHome').click(function(){
 		// toggle the nav buttons
 	    $('#navHome').addClass('active');
+	    $('#navData').removeClass('active');
 	    $('#navOrbBrowser').removeClass('active');
 	    
 	    displayHome();
@@ -409,10 +407,18 @@ function init() {
 		
 	    $('#navOrbBrowser').addClass('active');
 	    $('#navHome').removeClass('active');
+	    $('#navData').removeClass('active');
 	    
-	    displayOb();
+	    displayOb(false);
 	});	
 	
+	$('#navData').click(function(){
+	    $('#navHome').removeClass('active');
+	    $('#navData').addClass('active');
+	    $('#navOrbBrowser').removeClass('active');
+	    
+	    displayData();
+	});	
 	
     document.getElementById('file-input')
   		.addEventListener('change', readSingleFile, false);
@@ -459,13 +465,30 @@ function init() {
 
 function displayHome() {
     $('#divHome').show();
-    $('#divOrbBrowser').hide();
-	
+    $('#divData').hide();
+    $('#divOrbBrowser').hide();	
 }
 
-function displayOb() {
+function displayOb(isDataLoaded) {
+	console.log("displayOb loaded=" + isDataLoaded);
     $('#divHome').hide();
     $('#divOrbBrowser').show();
+    
+    if( isDataLoaded ) {
+    	  $('#divObStatus').html("Table Loaded: filter numeric fields by entering a min value in the table footer " +
+    			  "in the box labeled &ge; and/or a max valie in the box labeled &le;. Categorical fields "
+    			  + "have a pulldown menu for available values");
+    }
+    else {
+  	  $('#divObStatus').html("Table Loading");
+    	
+    }
+}
+
+function displayData() {
+    $('#divHome').hide();
+    $('#divData').show();
+    $('#divOrbBrowser').hide();	
 }
 
 function download_file(fileData, filename) {
@@ -499,9 +522,10 @@ $( document ).ready(function() {
       <a class="navbar-brand" href="#">OrbBrowser</a>
     </div>
     <ul class="nav navbar-nav">
-      <li class="active" id="navHome"><a href="#">Home</a></li>
-      <li><a id="navOrbBrowser" href="#">Orb Browser</a></li>
-      <li><a href="#">More Info</a></li> 
+      <li id="navHome" class="active"><a href="#">Home</a></li>
+      <li id="navOrbBrowser"><a href="#">Orb Browser</a></li>
+      <li id="navData"><a href="#">Data and Examples</a></li> 
+      <li id="navMoreInfo"><a href="#">Download and More Info</a></li> 
     </ul>
   </div>
 </nav>
@@ -509,16 +533,17 @@ $( document ).ready(function() {
 </div>
 
 <div id="section">
-
+<!-- ========= Home Page Content ======== -->
   <div id="divHome">
   <p class="info">OrbBrowser is a minor planet orbit browser implemented in HTML and Javascript. 
-The utility allows a user to input a file containing minor orbits in the IAU Minor Planet Center
-(MPC) export format and browse, filter and export the entries in the MPCORB or other formats.</p>
+The utility allows you to input a file containing minor orbits in the IAU Minor Planet Center
+(MPC) export format and browse, filter and export the filtered set back out to MPCORB or other formats.</p>
 
 <p class="norm">Select a local uncompressed file in the MPCOrb format. Note that the
 entire MPCOrb database will be too large to load in a client-side browser app but a 
-subset such as NEA.txt will work fine. Select "More Info" above for more details
-and links to example files</p>
+subset such as NEA.txt will work fine. Select "Data and Examples" above for more details
+and links to example files. Select "Download and More Info" to download the utility
+to run it locally.</p>
 <div class="formGroup">
   <div class="formElem">
     <input type="file" id="file-input" />
@@ -535,7 +560,25 @@ and links to example files</p>
    </div>
 </div>
 </div>
+<!-- ========= Data Page Content ======== -->
+<div id="divData">
+  <p class="info">The International Astronomical Union's Minor Planet Center provides Minor Planet Orbit
+  data in a fixed-width data format available on their site's <a href="http://www.minorplanetcenter.net/data">Data Page</a>.
+  Since this utility processes the input client-side in a web-browser, it is not practical to load the entire MPCORB.DAT file
+  here, but available subsets such as NEA.txt should work fine. Other lists are available elsewhere 
+  and, of course, you can load your own custom lists. Utilities to create custom filtered sets are the works
+  here so stay tuned.</p>
+  <p class="info">You can also find a couple examples files below to try out. You will need to save the file locally and
+  then select the file from the home page:</p>
+  <ul>
+  <li><a href="data/daily.dat">Daily Orbit Example</a>
+  <li><a href="data/test.dat">Test Example</a> - a small NEA test set
+  </ul>
+</div>
+
 <div id="divOrbBrowser" class="ob">
+<div id="divObStatus" class="info"></div>
+<br>
 <table id="elemTable" class="display" width="100%">
 	<thead>
 	<tr>
