@@ -117,6 +117,7 @@ function readSingleFile(e) {
   }
   var reader = new FileReader();
   reader.onload = function(e) {
+	  
     lines = e.target.result.split(/\r?\n/);
     //displayLineCount(lines.length);
     for(iline = 0; iline < lines.length; ++iline) {
@@ -133,44 +134,46 @@ function readSingleFile(e) {
     //var orbitTable = $('#elemTable').DataTable();
     if( tableLoaded == true ) {
     	console.log("reset the table");
-    	orbitTable.clear().rows.add(elements).draw()
+    	//orbitTable.clear().rows.add(elements).draw();
+    	orbitTable.destroy();
+    	$( "th.select-filter" ).html("");
     }
-    else {
-		orbitTable = $('#elemTable').DataTable(
-		{
-			retrieve: true,
-			data: elements,
-			columns: [
-				{ data: "designationPacked" },
-				{ data: "H" },
-				{ data: "G" },
-				{ data: "epochPacked" },
-				{ data: "a" },
-				{ data: "e" },
-				{ data: "i" },
-				{ data: "node" },
-				{ data: "peri" },
-				{ data: "M" },
-				{ data: "n" },
-				{ className: "range-filter", data: "U" },
-				{ data: "reference" },
-				{ data: "nObservations" },
-				{ data: "nOppositions" },
-				{ data: "obsInfo" },
-				{ data: "residual" },
-				{ data: "perturbCoarse" },
-				{ data: "perturbPrecise" },
-				{ data: "flags" },
-				{ className: "select-filter", data: "orbitType" },
-				{ className: "select-filter", data: "neoFlag" },
-				{ className: "select-filter",data: "km1Flag" },
-				{ className: "select-filter",data: "opp1Flag" },
-				{ className: "select-filter",data: "critFlag" },
-				{ className: "select-filter", data: "phaFlag" },
-				{ data: "designation" },
-				{ data: "orbitDate" }
-			]
-		}
+	orbitTable = $('#elemTable').DataTable(
+	{
+		processing: true,
+		retrieve: true,
+		data: elements,
+		columns: [
+			{ data: "designationPacked" },
+			{ data: "H" },
+			{ data: "G" },
+			{ data: "epochPacked" },
+			{ data: "a" },
+			{ data: "e" },
+			{ data: "i" },
+			{ data: "node" },
+			{ data: "peri" },
+			{ data: "M" },
+			{ data: "n" },
+			{ className: "range-filter", data: "U" },
+			{ data: "reference" },
+			{ data: "nObservations" },
+			{ data: "nOppositions" },
+			{ data: "obsInfo" },
+			{ data: "residual" },
+			{ data: "perturbCoarse" },
+			{ data: "perturbPrecise" },
+			{ data: "flags" },
+			{ className: "select-filter", data: "orbitType" },
+			{ className: "select-filter", data: "neoFlag" },
+			{ className: "select-filter",data: "km1Flag" },
+			{ className: "select-filter",data: "opp1Flag" },
+			{ className: "select-filter",data: "critFlag" },
+			{ className: "select-filter", data: "phaFlag" },
+			{ data: "designation" },
+			{ data: "orbitDate" }
+		]
+	}
 	) // end table ctor
 	.on('search', function() {
 		var rowCount = orbitTable.rows({order:'index', search:'applied'}).data().length;
@@ -201,7 +204,7 @@ function readSingleFile(e) {
         } );
 } );  // end select-filter
 
-	} // end else
+	//} // end else
 	tableLoaded = true;
   };
   
@@ -233,7 +236,6 @@ function readSingleFile(e) {
   //$('#uMin,#uMax').keyup( function() {
 //	  orbitTable.draw();
 //  } );
-  
   reader.readAsText(file);
 
   displayOb();
