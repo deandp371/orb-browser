@@ -7,8 +7,8 @@ filter and export the entries in the MPCORB or other formats.
 
 Author: David P Dean
 Contact: deandp371@gmail.com
-Version: 0.5 beta
-Date: 2016-07-14
+Version: 1.0 beta
+Date: 2016-07-17
 License: Open Source under the Apache 2.0 License
 Demo site: TBD
 Source Code: GitHub project orb-browser
@@ -40,6 +40,16 @@ p.info {
 }
 p.norm {
     font-size: 1.0em;
+}
+a:link.oblink {
+    background-color: midnightblue;
+    color: yellow;
+    text-decoration: underline;
+}
+a:visited.oblink {
+    background-color: midnightblue;
+    color: yellow;
+    text-decoration: underline;
 }
 input[type=file] { 
 	width: 200px; 
@@ -397,6 +407,7 @@ function init() {
 		// toggle the nav buttons
 	    $('#navHome').addClass('active');
 	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').removeClass('active');
 	    $('#navOrbBrowser').removeClass('active');
 	    
 	    displayHome();
@@ -408,6 +419,7 @@ function init() {
 	    $('#navOrbBrowser').addClass('active');
 	    $('#navHome').removeClass('active');
 	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').removeClass('active');
 	    
 	    displayOb(false);
 	});	
@@ -415,12 +427,22 @@ function init() {
 	$('#navData').click(function(){
 	    $('#navHome').removeClass('active');
 	    $('#navData').addClass('active');
+	    $('#navMoreInfo').removeClass('active');
 	    $('#navOrbBrowser').removeClass('active');
 	    
 	    displayData();
 	});	
 	
-    document.getElementById('file-input')
+	$('#navMoreInfo').click(function(){
+	    $('#navHome').removeClass('active');
+	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').addClass('active');
+	    $('#navOrbBrowser').removeClass('active');
+	    
+	    displayMoreInfo();
+	});	
+
+	document.getElementById('file-input')
   		.addEventListener('change', readSingleFile, false);
     
     $( "#downloadTsv" ).click(function() {
@@ -466,12 +488,15 @@ function init() {
 function displayHome() {
     $('#divHome').show();
     $('#divData').hide();
+    $('#divMoreInfo').hide();
     $('#divOrbBrowser').hide();	
 }
 
 function displayOb(isDataLoaded) {
 	console.log("displayOb loaded=" + isDataLoaded);
     $('#divHome').hide();
+    $('#divData').hide();
+    $('#divMoreInfo').hide();
     $('#divOrbBrowser').show();
     
     if( isDataLoaded ) {
@@ -488,6 +513,14 @@ function displayOb(isDataLoaded) {
 function displayData() {
     $('#divHome').hide();
     $('#divData').show();
+    $('#divMoreInfo').hide();
+    $('#divOrbBrowser').hide();	
+}
+
+function displayMoreInfo() {
+    $('#divHome').hide();
+    $('#divData').hide();
+    $('#divMoreInfo').show();
     $('#divOrbBrowser').hide();	
 }
 
@@ -562,20 +595,35 @@ to run it locally.</p>
 </div>
 <!-- ========= Data Page Content ======== -->
 <div id="divData">
-  <p class="info">The International Astronomical Union's Minor Planet Center provides Minor Planet Orbit
-  data in a fixed-width data format available on their site's <a href="http://www.minorplanetcenter.net/data">Data Page</a>.
+  <p class="info">The International Astronomical Union's Minor Planet Center (MPC) provides minor planet orbit
+  data in a fixed-width data format available on their site's <a class="oblink" href="http://www.minorplanetcenter.net/data" target="_blank">Data Page</a>.
   Since this utility processes the input client-side in a web-browser, it is not practical to load the entire MPCORB.DAT file
-  here, but available subsets such as NEA.txt should work fine. Other lists are available elsewhere 
-  and, of course, you can load your own custom lists. Utilities to create custom filtered sets are the works
-  here so stay tuned.</p>
-  <p class="info">You can also find a couple examples files below to try out. You will need to save the file locally and
+  in OrbBrowser, but available subsets such as NEA.txt should work fine. Software utilities to filter the full database are available
+  elsewhere, and a web-based filter is in the works here, so stay tuned!</p>
+  <p class="info">You can also find a couple of example files below to try out. You will need to save the file locally and
   then select the file from the home page:</p>
   <ul>
-  <li><a href="data/daily.dat">Daily Orbit Example</a>
-  <li><a href="data/test.dat">Test Example</a> - a small NEA test set
+  <li><a class="oblink" href="data/daily.dat">Daily Orbit Example</a>
+  <li><a class="oblink" href="data/test.dat">Test Example</a> - a small NEA test set
   </ul>
 </div>
-
+<!-- ========= More Info Page Content ======== -->
+  <div id="divMoreInfo">
+  <p class="info">OrbBrowser is implemented in HTML5 and Javascript, relying heavily on JQuery and the JQuery Datatables
+package. The site is open source and available in the GitHub project orb-browser.</p>
+<p class="info">
+The utility can be run from this site, but since it is all static HTML it can be downloaded and run locally.
+A ZIP package will be made available from this page soon after beta testing is completed.</p>
+<p class="info">
+Author: David P Dean<br>
+Contact: deandp371@gmail.com<br>
+Version: 1.0 beta<br>
+Date: 2016-07-17<br>
+License: Open Source under the Apache 2.0 License<br>
+Source Code: GitHub project orb-browser
+</p>
+</div>
+<!-- ========= Orb Browser Page Content ======== -->
 <div id="divOrbBrowser" class="ob">
 <div id="divObStatus" class="info"></div>
 <br>
