@@ -53,6 +53,10 @@ a:visited.oblink {
     color: yellow;
     text-decoration: underline;
 }
+input {
+    background-color: midnightblue;
+    color: yellow;
+}
 input[type=file] { 
 	width: 200px; 
 }
@@ -127,7 +131,6 @@ var orbits = [];
 
 // load and parse lines into an array
 function readSingleFile(e) {
-  var orbits = [];
   var file = e.target.files[0];
   if (!file) {
     return;
@@ -156,6 +159,7 @@ function readSingleFile(e) {
 
   
   // external search routine for filter search
+  /*
   $.fn.dataTable.ext.search.push(
     	function( settings, data, dataIndex ) {
     		var result = 
@@ -175,15 +179,17 @@ function readSingleFile(e) {
             return result;
         }
   );
-  
-  $('.ranger').keyup( function() {
-	  orbitTable.draw();
-  } );
+  */
+
+  //$('.ranger').keyup( function() {
+	//  orbitTable.draw();
+  //} );
   reader.readAsText(file);
   //displayOb(true);
 }  // end read file
 
 function doSample() {
+	orbits = [];
 	SAMPLE_INTERVAL = Math.trunc(allLines.length / SAMPLE_COUNT);
 	console.log("readFile: sample every " + SAMPLE_INTERVAL);
 	//displayLineCount(lines.length);
@@ -665,60 +671,22 @@ Source Code: GitHub project orb-browser
 	<tfoot>
 	<tr>
 		<th>Packed Desig</th>
-		<th>
-		  &ge;<input type="number" id="hMin" class="ranger"></input>
-		  &le;<input type="number" id="hMax" class="ranger"></input>
-		</th>
+		<th>H</th>
 		<th>G</th>
 		<th>Epoch</th>
-		<th>
-		  &ge;<input type="number" id="aMin" class="ranger"></input>
-		  &le;<input type="number" id="aMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="eMin" class="ranger"></input>
-		  &le;<input type="number" id="eMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="iMin" class="ranger"></input>
-		  &le;<input type="number" id="iMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="nodeMin" class="ranger"></input>
-		  &le;<input type="number" id="nodeMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="periMin" class="ranger"></input>
-		  &le;<input type="number" id="periMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="mMin" class="ranger"></input>
-		  &le;<input type="number" id="mMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="nMin" class="ranger"></input>
-		  &le;<input type="number" id="nMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="uMin" class="ranger"></input>
-		  &le;<input type="number" id="uMax" class="ranger"></input>
-		</th>
+		<th>a</th>
+		<th>e</th>
+		<th>i</th>
+		<th>Node</th>
+		<th>Peri</th>
+		<th>M</th>
+		<th>n</th>
+		<th>U</th>
 		<th>Ref</th>
-		<th>
-		  &ge;<input type="number" id="nobsMin" class="ranger"></input>
-		  &le;<input type="number" id="nobsMax" class="ranger"></input>
-		</th>
-		<th>
-		  &ge;<input type="number" id="noppsMin" class="ranger"></input>
-		  &le;<input type="number" id="noppsMax" class="ranger"></input>
-		</th>
-		<th>
-		Arc Yrs/Len
-		</th>
-		<th>
-		  &ge;<input type="number" id="rmsMin" class="ranger"></input>
-		  &le;<input type="number" id="rmsMax" class="ranger"></input>
-		</th>
+		<th>Num_obs</th>
+		<th>Num_opps</th>
+		<th>Arc Yrs/Len</th>
+		<th>rms</th>
 		<th>Perturbers</th>
 		<th>Perturbers_2</th>
 		<th>Hex_flags</th>
@@ -729,10 +697,7 @@ Source Code: GitHub project orb-browser
 		<th>Crit_flag</th>
 		<th>PHA_flag</th>
 		<th>Designation</th>
-		<th>
-		  &ge;<input type="number" id="lobsMin" class="ranger"></input>
-		  &le;<input type="number" id="lobsMax" class="ranger"></input>
-		</th>
+		<th>Last_obs</th>
 	</tr>
 	</tfoot>
 </table>
