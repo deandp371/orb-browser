@@ -1,0 +1,750 @@
+<!-- 
+orb-filter
+HTML/Javascript utility designed to sample and filter the Minor Planet
+Center Minor Planet Orbit database (MPCORB.DAT).
+The utility allows a user to input the full datafile, define filters
+and sample and export a filtered sub-set for use in other programs
+such as the companion OrbBrowser utility from this site or other
+software. 
+
+Author: David P Dean
+Contact: deandp371@gmail.com
+Version: 0.1 beta
+Date: 2016-07-20
+License: Open Source under the Apache 2.0 License
+Demo site: TBD
+Source Code: GitHub project orb-browser
+-->
+<html>
+<head>
+<meta charset="ISO-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+<link rel="stylesheet" href="css/jquery.dataTables.min.css">
+<script src="js/jquery-1.12.3.js"></script>	
+<script src="js/jquery.dataTables.min.js"></script>
+<script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+<style>
+body {
+    font-family: Ariel, sans-serif;
+    background-color:midnightblue;
+    color:white;
+}
+h1 {
+    color: maroon;
+    margin-left: 40px;
+} 
+h2 {
+    font-size: 2.0em;
+}
+p.info {
+    font-size: 1.2em;
+}
+p.norm {
+    font-size: 1.0em;
+}
+a:link.oblink {
+    background-color: midnightblue;
+    color: yellow;
+    text-decoration: underline;
+}
+a:visited.oblink {
+    background-color: midnightblue;
+    color: yellow;
+    text-decoration: underline;
+}
+input[type=file] { 
+	width: 200px; 
+}
+div.header {
+    font-family: Ariel, sans-serif;
+    font-weight: bold;
+}
+
+div.info {
+    font-family: Ariel, sans-serif;
+    font-weight: normal;
+}
+div.formGroup {
+	display:table;
+}
+div.formElem {
+	display:table-cell;
+}
+div.ob {
+	color: midnightblue;
+	background-color: white;
+}
+select.obSelect {
+	color: midnightblue;
+	background-color: white;
+}
+p.header {
+    font-family: Ariel, sans-serif;
+    font-weight: bold;
+}
+table {
+    border-collapse: collapse;
+}
+table, th, td {
+	color: black;
+    border: 1px solid black;
+    font-size: 10px;
+}
+#header {
+    text-align:center;
+    padding:5px;
+}
+#section {
+    float:left;
+    padding:10px; 
+    margin-left: 5%;
+    margin-right: 5%; 
+    margin-bottom: 5%;     
+}
+#footer {
+    background-color:black;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px; 
+}
+</style>
+<script>
+
+// reject input line less then this value
+var LINE_MIN_LEN = 180;
+// number of lines to sample
+var SAMPLE_COUNT = 100;
+// sample input file every 100 records
+var SAMPLE_INTERVAL = 100;
+var tableLoaded = false;
+var filteredData;
+
+var allLines = [];
+var sampleLines = [];
+var orbits = [];
+
+// load and parse lines into an array
+function readSingleFile(e) {
+  var orbits = [];
+  var file = e.target.files[0];
+  if (!file) {
+    return;
+  }
+  var reader = new FileReader();
+  reader.onload = function(e) {
+	  console.log("read start");
+	  $("html,body").css("cursor", "wait");
+
+	var lineCount = 0; // count of valid lines
+	var lines = e.target.result.split(/\r?\n/);
+    for(iline = 0; iline < lines.length; ++iline) {
+    	var nextLine = lines[iline];
+		if( nextLine.length >= LINE_MIN_LEN ) {
+			if( lineCount == 0 ) {
+				console.log("first line=" + nextLine);
+			}
+			allLines[lineCount++] = nextLine;
+		}
+    }
+	console.log("loaded file valid line count =" + lineCount);
+	  $("html,body").css("cursor", "default");
+	  console.log("read end");
+
+  };  // end function
+
+  
+  // external search routine for filter search
+  $.fn.dataTable.ext.search.push(
+    	function( settings, data, dataIndex ) {
+    		var result = 
+    			filterResult($('#hMin').val(), $('#hMax').val(), data[1]) &&
+    			filterResult($('#aMin').val(), $('#aMax').val(), data[4]) &&
+    			filterResult($('#eMin').val(), $('#eMax').val(), data[5]) &&
+    			filterResult($('#iMin').val(), $('#iMax').val(), data[6]) &&
+    			filterResult($('#nodeMin').val(), $('#nodeMax').val(), data[7]) &&
+    			filterResult($('#periMin').val(), $('#periMax').val(), data[8]) &&
+    			filterResult($('#mMin').val(), $('#mMax').val(), data[9]) &&
+    			filterResult($('#nMin').val(), $('#nMax').val(), data[10]) &&
+    			filterResult($('#uMin').val(), $('#uMax').val(), data[11]) &&
+			    filterResult($('#nobsMin').val(), $('#nobsMax').val(), data[13]) &&
+			    filterResult($('#noppsMin').val(), $('#noppsMax').val(), data[14]) &&
+		    	filterResult($('#rmsMin').val(), $('#rmsMax').val(), data[16]) &&
+	    		filterResult($('#lobsMin').val(), $('#lobsMax').val(), data[27]);
+            return result;
+        }
+  );
+  
+  $('.ranger').keyup( function() {
+	  orbitTable.draw();
+  } );
+  reader.readAsText(file);
+  //displayOb(true);
+}  // end read file
+
+function doSample() {
+	SAMPLE_INTERVAL = Math.trunc(allLines.length / SAMPLE_COUNT);
+	console.log("readFile: sample every " + SAMPLE_INTERVAL);
+	//displayLineCount(lines.length);
+	var iorbit = 0;	// index of orbit loaded to sample table
+	for(iline = 0; iline < allLines.length; ++iline) {
+		if( iline % SAMPLE_INTERVAL != 0) {
+			continue;	
+		}
+		console.log("add line #" + iline);
+		var nextLine = allLines[iline];
+		if( typeof nextLine !== 'undefined' ) {
+			var elem = new orbit(nextLine);
+			orbits[iorbit++] = elem;
+		}
+	}
+	//var orbitTable = $('#elemTable').DataTable();
+	if( tableLoaded == true ) {
+		console.log("reset the table");
+		//orbitTable.clear().rows.add(orbits).draw();
+		orbitTable.destroy();
+	}
+	orbitTable = $('#elemTable').DataTable(
+	{
+		processing: true,
+		retrieve: true,
+		data: orbits,
+		columns: [
+			{ data: "designationPacked" },
+			{ data: "H" },
+			{ data: "G" },
+			{ data: "epochPacked" },
+			{ data: "a" },
+			{ data: "e" },
+			{ data: "i" },
+			{ data: "node" },
+			{ data: "peri" },
+			{ data: "M" },
+			{ data: "n" },
+			{ data: "U" },
+			{ data: "reference" },
+			{ data: "nObservations" },
+			{ data: "nOppositions" },
+			{ data: "obsInfo" },
+			{ data: "residual" },
+			{ data: "perturbCoarse" },
+			{ data: "perturbPrecise" },
+			{ data: "flags" },
+			{ data: "orbitType" },
+			{ data: "neoFlag" },
+			{ data: "km1Flag" },
+			{ data: "opp1Flag" },
+			{ data: "critFlag" },
+			{ data: "phaFlag" },
+			{ data: "designation" },
+			{ data: "orbitDate" }
+		]
+	}) // end table ctor
+	tableLoaded = true;
+} // end doSample
+
+function filterResult(min, max, rowValue) {
+	var result = false;
+    var val = parseFloat( rowValue ) || -1;
+
+    if ( ( min == '' && max == '' ) ||
+         ( min == '' && val <= max ) ||
+         ( min <= val && '' == max ) ||
+         ( min <= val && val <= max ) )
+    {
+        result = true;
+    }
+    return result;	
+}
+
+function orbit(line) {
+	//console.log(line);
+	this.line = line;
+	this.designationPacked =line.slice(0,7).trim(); // designation in packed form text
+	this.H = Number(line.slice(8,13));              // absolute magnitude, H numeric
+	this.G = Number(line.slice(14,19));             // slope parameter, G numeric
+	this.epochPacked = line.slice(20,25).trim();    // epoch packed - text
+	
+	this.M = Number(line.slice(26,35));             // mean anomoly numeric
+	this.peri = Number(line.slice(37,46));          // Argument of perihelion, numeric
+	this.node = Number(line.slice(48,57));          // Longitude of the ascending node, numeric
+	this.i = Number(line.slice(59,68));   // Inclination to the ecliptic, numeric
+	
+	this.e = Number(line.slice(70,79));   // Orbital eccentricity, numeric
+	this.n = Number(line.slice(80,91));   // mean daily motion, numeric
+	this.a = Number(line.slice(92,103));   // semimajor axis, numeric
+	
+	this.U = line.slice(105,106);   // uncertainty parameter - text
+
+	this.reference = line.slice(107,116);   // reference - text
+	
+	this.nObservations = Number(line.slice(117,122));   // Number of observations, numeric
+	this.nOppositions = Number(line.slice(123,126));   // Number of oppositions, numeric
+	
+	this.obsInfo = line.slice(127,136);   // first and last obs or number of days
+	
+	this.residual = Number(line.slice(137,141));   // residual RMS, numeric
+
+	this.perturbCoarse = line.slice(142,145);   // Coarse indicator of perturbers - text
+	this.perturbPrecise = line.slice(146,149);   // Precise indicator of perturbers - text
+
+	this.flags = line.slice(161,165);   // Precise indicator of perturbers - text
+	this.orbitType = getOrbitType(this.flags);
+	this.neoFlag = isNEO(this.flags);
+	this.km1Flag = is1KM(this.flags);
+	this.opp1Flag = is1Opp(this.flags);
+	this.critFlag = isCrit(this.flags);
+	this.phaFlag = isPHA(this.flags);
+	
+	this.designation = line.slice(166,194);   // Readable designation - text
+	this.orbitDate = line.slice(194,202);   // Date last obs incl in orbit solution - text
+	
+	this.toTSV = function() {
+		return this.designationPacked + "\t"
+			+ this.H + "\t"
+			+ this.G + "\t"
+			+ this.epochPacked + "\t"
+			+ this.a + "\t"
+			+ this.e + "\t"
+			+ this.i + "\t"
+			+ this.node + "\t"
+			+ this.peri + "\t"
+			+ this.M + "\t"
+			+ this.n + "\t"
+			+ this.U + "\t"
+			+ this.reference + "\t"
+			+ this.nObservations + "\t"
+			+ this.nOppositions + "\t"
+			+ this.obsInfo + "\t"
+			+ this.residual + "\t"
+			+ this.perturbCoarse + "\t"
+			+ this.perturbPrecise + "\t"
+			+ this.flags + "\t"
+			+ this.orbitType + "\t"
+			+ this.neoFlag + "\t"
+			+ this.km1Flag + "\t"
+			+ this.opp1Flag + "\t"
+			+ this.critFlag + "\t"
+			+ this.phaFlag + "\t"
+			+ this.designation + "\t"
+			+ this.orbitDate;
+	}
+}
+
+// return the orbit type from the hex flags value lower 5 bits
+
+function getOrbitType(flags) {
+  var typeVal = parseInt(flags,16) & 0x1F;
+  var typeNames = [
+	"Unassigned",
+	"Atir",
+        "Aten",
+        "Apollo",
+        "Amor",
+        "Object with q < 1.665 AU",
+        "Hungaria",
+        "Phocaea",
+        "Hilda",
+        "Jupiter Trojan",
+        "Distant object"
+	];
+  var returnType = (typeVal <= 10) ? typeNames[typeVal] : "";
+  return returnType;
+}
+
+// return the NEO flag from the hex flags bit 11
+
+function isNEO(flags) {
+  var typeVal = parseInt(flags,16) & 0x0800;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
+}
+
+// return the 1km flag from the hex flags bit 12
+
+function is1KM(flags) {
+  var typeVal = parseInt(flags,16) & 0x1000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
+}
+
+// return the 1 opposition flag from the hex flags bit 13
+
+function is1Opp(flags) {
+  var typeVal = parseInt(flags,16) & 0x2000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
+}
+
+// return the critical list flag from the hex flags bit 14
+
+function isCrit(flags) {
+  var typeVal = parseInt(flags,16) & 0x4000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+return returnType;
+}
+
+// return the PHA flag from the hex flags bit 15
+
+function isPHA(flags) {
+  var typeVal = parseInt(flags,16) & 0x8000;
+  var returnType = (typeVal > 0) ? 1 : 0;
+  return returnType;
+}
+	
+//function displayLineCount(count) {
+//  $('#lineCount').val(count);
+//}
+
+function init() {
+	// show the home div by default and re-show it when Home is clicked
+	$('#navHome').click(function(){
+		// toggle the nav buttons
+	    $('#navHome').addClass('active');
+	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').removeClass('active');
+	    $('#navOrbFilter').removeClass('active');
+	    
+	    displayHome();
+	});	
+	
+	// hide the table by default and show it when 
+	$('#navOrbFilter').click(function(){
+		
+	    $('#navOrbFilter').addClass('active');
+	    $('#navHome').removeClass('active');
+	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').removeClass('active');
+	    
+	    displayOb(false);
+	});	
+	
+	$('#navData').click(function(){
+	    $('#navHome').removeClass('active');
+	    $('#navData').addClass('active');
+	    $('#navMoreInfo').removeClass('active');
+	    $('#navOrbFilter').removeClass('active');
+	    
+	    displayData();
+	});	
+	
+	$('#navMoreInfo').click(function(){
+	    $('#navHome').removeClass('active');
+	    $('#navData').removeClass('active');
+	    $('#navMoreInfo').addClass('active');
+	    $('#navOrbFilter').removeClass('active');
+	    
+	    displayMoreInfo();
+	});	
+
+	document.getElementById('file-input')
+  		.addEventListener('change', readSingleFile, false);
+    
+	$('#sampleLineCount').val(SAMPLE_COUNT);
+	$("#sampleButton").click(function() {
+		console.log("start sample size=" + SAMPLE_COUNT);
+		doSample();
+		displayOb(true);
+	});
+	
+    $( "#downloadTsv" ).click(function() {
+  		var tab = "\t";
+  		
+		var tsvData = 
+			"Packed Desig" +tab + "H" +tab + "G" +tab + "Epoch" +tab +
+			"a" +tab + "e" +tab + "i" +tab + "Node" +tab +
+			"Peri" +tab + "M" +tab + "n" +tab + "U" +tab +
+			"Ref" +tab + "Num_obs" +tab + "Num_opps" +tab + "Arc Yrs/Len" +tab +
+			"rms" +tab + "Perturbers" +tab + "Perturbers_2" +tab + "Hex_flags" +tab +
+			"Orbit_type" +tab + "NEO_flag" +tab + "One_km_flag" +tab + "One_opp_flag" +tab +
+			"Crit_flag" +tab + "PHA_flag" +tab + "Designation" +tab + "Last_obs" +tab + "\n";
+
+  		if( typeof filteredData !== 'undefined' ) {
+  			console.log("download tsv row count=" + filteredData.length);
+  			for (var i = 0; i < filteredData.length; i++) {
+				tsvData += filteredData[i].toTSV();
+				tsvData += "\n";
+  			}
+  			download_file(tsvData, "tsv-export.txt");
+  		}
+    });
+
+    $( "#downloadMpc" ).click(function() {
+
+  		if( typeof filteredData !== 'undefined' ) {
+  			console.log("download mpc row count=" + filteredData.length);
+  			var mpcData = "";
+  			for (var i = 0; i < filteredData.length; i++) {
+  				mpcData += filteredData[i].line;
+  				mpcData += "\n";
+  			}
+  			download_file(mpcData, "mpc-export.txt");
+  		}
+    });
+
+	// display home to start
+	displayHome();
+
+}
+
+function displayHome() {
+    $('#divHome').show();
+    $('#divData').hide();
+    $('#divMoreInfo').hide();
+    $('#divOrbBrowser').hide();	
+}
+
+function displayOb(isDataLoaded) {
+	console.log("displayOb loaded=" + isDataLoaded);
+    $('#divHome').hide();
+    $('#divData').hide();
+    $('#divMoreInfo').hide();
+    $('#divOrbBrowser').show();
+    
+    if( isDataLoaded ) {
+    	  $('#divObStatus').html("Table Loaded: filter numeric fields by entering a min value in the table footer " +
+    			  "in the box labeled &ge; and/or a max valie in the box labeled &le;. Categorical fields "
+    			  + "have a pulldown menu for available values");
+    }
+    else {
+  	  $('#divObStatus').html("Table Loading");
+    	
+    }
+}
+
+function displayData() {
+    $('#divHome').hide();
+    $('#divData').show();
+    $('#divMoreInfo').hide();
+    $('#divOrbBrowser').hide();	
+}
+
+function displayMoreInfo() {
+    $('#divHome').hide();
+    $('#divData').hide();
+    $('#divMoreInfo').show();
+    $('#divOrbBrowser').hide();	
+}
+
+function download_file(fileData, filename) {
+	var blob = new Blob([fileData], { type: 'text/plain;charset=utf-8;' });
+    if (navigator.msSaveBlob) { // IE 10+
+        navigator.msSaveBlob(blob, filename);
+    } else {
+        var link = document.createElement("a");
+        if (link.download !== undefined) { // feature detection
+            // Browsers that support HTML5 download attribute
+            var url = URL.createObjectURL(blob);
+            link.setAttribute("href", url);
+            link.setAttribute("download", filename);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    }
+}
+
+$( document ).ready(function() {
+	init();
+});
+</script>
+</head>
+<body>
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="#">OrbFilter</a>
+    </div>
+    <ul class="nav navbar-nav">
+      <li id="navHome" class="active"><a href="#">Home</a></li>
+      <li id="navOrbFilter"><a href="#">Orb Filter</a></li>
+      <li id="navData"><a href="#">Data and Examples</a></li> 
+      <li id="navMoreInfo"><a href="#">Download and More Info</a></li> 
+    </ul>
+  </div>
+</nav>
+<div id="header">
+</div>
+
+<div id="section">
+<!-- ========= Home Page Content ======== -->
+  <div id="divHome">
+  <p class="info">OrbFilter allows the MPC Minor Planet Orbit file (MPCORB) to be sampled
+  and filtered allowing subset of interest to be exported for use in observation planning
+  or other software. See the Data page for more info on accessing the MPCORB file and other
+  details.
+  </p>
+
+<p class="norm">Select a local copy of MPCORB.DAT or other input file in the MPC format.
+Select sample size and add filters and the Sample button to view a subset of the filtered
+data. Select "Data and Examples" above for more details
+and links to example files. Select "Download and More Info" to download the utility
+to run it locally.</p>
+<div class="formGroup">
+  <div class="formElem">
+    <input type="file" id="file-input" />
+  </div>
+  <div class="formElem">
+    <select class="obSelect">
+      <option value="mpc-classic" selected>MPC Minor Planet Format</option>
+   </select>
+   </div>
+  <div class="formElem">
+    <label>Sample Line Count</label>
+  	<input type=number id="sampleLineCount"/>
+   </div>
+  <div class="formElem">
+  	<button type=button id="sampleButton">Sample</button>
+   </div>
+</div>
+</div>
+<!-- ========= Data Page Content ======== -->
+<div id="divData">
+  <p class="info">The International Astronomical Union's Minor Planet Center (MPC) provides minor planet orbit
+  data in a fixed-width data format available on their site's <a class="oblink" href="http://www.minorplanetcenter.net/data" target="_blank">Data Page</a>.
+  Download the MPCORB.DAT file to your local workstation and upload to this utility to create a custom subset for browsing
+  on the companion OrbBrowser utility or your favorite planetarium or other astronomical software. The subsets provided by
+  the MPC such as NEA.txt can be loaded directly into OrbBrowser for exploration, filtering and export.
+ </p>
+</div>
+<!-- ========= More Info Page Content ======== -->
+  <div id="divMoreInfo">
+  <p class="info">OrbFilter is implemented in HTML5 and Javascript, relying heavily on JQuery and the JQuery Datatables
+package. The site is open source and available in the GitHub project orb-browser.</p>
+<p class="info">
+The utility can be run from this site, but since it is all static HTML it can be downloaded and run locally.
+A ZIP package will be made available from this page soon after beta testing is completed.</p>
+<p class="info">
+Author: David P Dean<br>
+Contact: deandp371@gmail.com<br>
+Version: 1.0 beta<br>
+Date: 2016-07-17<br>
+License: Open Source under the Apache 2.0 License<br>
+Source Code: GitHub project orb-browser
+</p>
+</div>
+<!-- ========= Orb Browser Page Content ======== -->
+<div id="divOrbBrowser" class="ob">
+<div id="divObStatus" class="info"></div>
+<br>
+<table id="elemTable" class="display" width="100%">
+	<thead>
+	<tr>
+		<th>Packed Desig</th>
+		<th>H</th>
+		<th>G</th>
+		<th>Epoch</th>
+		<th>a</th>
+		<th>e</th>
+		<th>i</th>
+		<th>Node</th>
+		<th>Peri</th>
+		<th>M</th>
+		<th>n</th>
+		<th>U</th>
+		<th>Ref</th>
+		<th>Num_obs</th>
+		<th>Num_opps</th>
+		<th>Arc Yrs/Len</th>
+		<th>rms</th>
+		<th>Perturbers</th>
+		<th>Perturbers_2</th>
+		<th>Hex_flags</th>
+		<th>Orbit_type</th>
+		<th>NEO_flag</th>
+		<th>One_km_flag</th>
+		<th>One_opp_flag</th>
+		<th>Crit_flag</th>
+		<th>PHA_flag</th>
+		<th>Designation</th>
+		<th>Last_obs</th>
+	</tr>
+	</thead>
+	<tfoot>
+	<tr>
+		<th>Packed Desig</th>
+		<th>
+		  &ge;<input type="number" id="hMin" class="ranger"></input>
+		  &le;<input type="number" id="hMax" class="ranger"></input>
+		</th>
+		<th>G</th>
+		<th>Epoch</th>
+		<th>
+		  &ge;<input type="number" id="aMin" class="ranger"></input>
+		  &le;<input type="number" id="aMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="eMin" class="ranger"></input>
+		  &le;<input type="number" id="eMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="iMin" class="ranger"></input>
+		  &le;<input type="number" id="iMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="nodeMin" class="ranger"></input>
+		  &le;<input type="number" id="nodeMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="periMin" class="ranger"></input>
+		  &le;<input type="number" id="periMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="mMin" class="ranger"></input>
+		  &le;<input type="number" id="mMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="nMin" class="ranger"></input>
+		  &le;<input type="number" id="nMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="uMin" class="ranger"></input>
+		  &le;<input type="number" id="uMax" class="ranger"></input>
+		</th>
+		<th>Ref</th>
+		<th>
+		  &ge;<input type="number" id="nobsMin" class="ranger"></input>
+		  &le;<input type="number" id="nobsMax" class="ranger"></input>
+		</th>
+		<th>
+		  &ge;<input type="number" id="noppsMin" class="ranger"></input>
+		  &le;<input type="number" id="noppsMax" class="ranger"></input>
+		</th>
+		<th>
+		Arc Yrs/Len
+		</th>
+		<th>
+		  &ge;<input type="number" id="rmsMin" class="ranger"></input>
+		  &le;<input type="number" id="rmsMax" class="ranger"></input>
+		</th>
+		<th>Perturbers</th>
+		<th>Perturbers_2</th>
+		<th>Hex_flags</th>
+		<th>Orbit_type</th>
+		<th>NEO_flag</th>
+		<th>One_km_flag</th>
+		<th>One_opp_flag</th>
+		<th>Crit_flag</th>
+		<th>PHA_flag</th>
+		<th>Designation</th>
+		<th>
+		  &ge;<input type="number" id="lobsMin" class="ranger"></input>
+		  &le;<input type="number" id="lobsMax" class="ranger"></input>
+		</th>
+	</tr>
+	</tfoot>
+</table>
+<br>
+<p class="norm">
+Select "Home" to load a new file or export the entire or filtered data set by selecting one of the following:</p>
+<button type="button" id="downloadMpc">Export MPC Format</button>
+<button type="button" id="downloadTsv">Export TSV</button>
+</div>
+</div>
+<div id="footer">
+<p class="info">Copyright © near-earth.net. Hosted in Amazon S3</p>
+</div>
+</body> 
+</html>
