@@ -21,6 +21,7 @@ Source Code: GitHub project orb-browser
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
 <link rel="stylesheet" href="css/jquery.dataTables.min.css">
+<script src="js/MPOrbit.js"></script>	
 <script src="js/jquery-1.12.3.js"></script>	
 <script src="js/jquery.dataTables.min.js"></script>
 <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
@@ -113,6 +114,21 @@ table, th, td {
     text-align:center;
     padding:5px; 
 }
+fieldset {
+   width: 80%;
+}
+label.field {
+	text-align: right;
+	width: 20%;
+	float: left;
+	font-weight: bold;
+	margin-left: 10px;
+	margin-right: 10px;
+}
+p.fieldP {
+	clear:both;
+	padding: 3px;
+}
 </style>
 <script>
 
@@ -122,6 +138,13 @@ var LINE_MIN_LEN = 180;
 var SAMPLE_COUNT = 100;
 // sample input file every 100 records
 var SAMPLE_INTERVAL = 100;
+var FILTER_NAMES = [
+	"H", "a", "e", "i", "node", "peri", "M", "n", "U", "nObservations", "nOppositions", "residual", 
+	"Orbit Type", "NEO Flag (1 or 0)", "KM1+ Flag (1 or 0)", "Critical Flag (1 or 0)", "PHA Flag (1 or 0)", "lastObs" ];
+var FILTER_VALS = [
+	"h", "a", "e", "i", "node", "peri", "m", "n", "u", "nobs", "nopps", "rms",
+	"type", "neoFlag", "km1Flag", "critFlag", "phaFlag", "lastObs"];
+//////////////////////////////////////////////////
 var tableLoaded = false;
 var filteredData;
 
@@ -157,7 +180,6 @@ function readSingleFile(e) {
 
   };  // end function
 
-  
   // external search routine for filter search
   /*
   $.fn.dataTable.ext.search.push(
@@ -201,8 +223,8 @@ function doSample() {
 		console.log("add line #" + iline);
 		var nextLine = allLines[iline];
 		if( typeof nextLine !== 'undefined' ) {
-			var elem = new orbit(nextLine);
-			orbits[iorbit++] = elem;
+			var orbit = new MPOrbit(nextLine);
+			orbits[iorbit++] = orbit;
 		}
 	}
 	//var orbitTable = $('#elemTable').DataTable();
@@ -264,145 +286,6 @@ function filterResult(min, max, rowValue) {
     return result;	
 }
 
-function orbit(line) {
-	//console.log(line);
-	this.line = line;
-	this.designationPacked =line.slice(0,7).trim(); // designation in packed form text
-	this.H = Number(line.slice(8,13));              // absolute magnitude, H numeric
-	this.G = Number(line.slice(14,19));             // slope parameter, G numeric
-	this.epochPacked = line.slice(20,25).trim();    // epoch packed - text
-	
-	this.M = Number(line.slice(26,35));             // mean anomoly numeric
-	this.peri = Number(line.slice(37,46));          // Argument of perihelion, numeric
-	this.node = Number(line.slice(48,57));          // Longitude of the ascending node, numeric
-	this.i = Number(line.slice(59,68));   // Inclination to the ecliptic, numeric
-	
-	this.e = Number(line.slice(70,79));   // Orbital eccentricity, numeric
-	this.n = Number(line.slice(80,91));   // mean daily motion, numeric
-	this.a = Number(line.slice(92,103));   // semimajor axis, numeric
-	
-	this.U = line.slice(105,106);   // uncertainty parameter - text
-
-	this.reference = line.slice(107,116);   // reference - text
-	
-	this.nObservations = Number(line.slice(117,122));   // Number of observations, numeric
-	this.nOppositions = Number(line.slice(123,126));   // Number of oppositions, numeric
-	
-	this.obsInfo = line.slice(127,136);   // first and last obs or number of days
-	
-	this.residual = Number(line.slice(137,141));   // residual RMS, numeric
-
-	this.perturbCoarse = line.slice(142,145);   // Coarse indicator of perturbers - text
-	this.perturbPrecise = line.slice(146,149);   // Precise indicator of perturbers - text
-
-	this.flags = line.slice(161,165);   // Precise indicator of perturbers - text
-	this.orbitType = getOrbitType(this.flags);
-	this.neoFlag = isNEO(this.flags);
-	this.km1Flag = is1KM(this.flags);
-	this.opp1Flag = is1Opp(this.flags);
-	this.critFlag = isCrit(this.flags);
-	this.phaFlag = isPHA(this.flags);
-	
-	this.designation = line.slice(166,194);   // Readable designation - text
-	this.orbitDate = line.slice(194,202);   // Date last obs incl in orbit solution - text
-	
-	this.toTSV = function() {
-		return this.designationPacked + "\t"
-			+ this.H + "\t"
-			+ this.G + "\t"
-			+ this.epochPacked + "\t"
-			+ this.a + "\t"
-			+ this.e + "\t"
-			+ this.i + "\t"
-			+ this.node + "\t"
-			+ this.peri + "\t"
-			+ this.M + "\t"
-			+ this.n + "\t"
-			+ this.U + "\t"
-			+ this.reference + "\t"
-			+ this.nObservations + "\t"
-			+ this.nOppositions + "\t"
-			+ this.obsInfo + "\t"
-			+ this.residual + "\t"
-			+ this.perturbCoarse + "\t"
-			+ this.perturbPrecise + "\t"
-			+ this.flags + "\t"
-			+ this.orbitType + "\t"
-			+ this.neoFlag + "\t"
-			+ this.km1Flag + "\t"
-			+ this.opp1Flag + "\t"
-			+ this.critFlag + "\t"
-			+ this.phaFlag + "\t"
-			+ this.designation + "\t"
-			+ this.orbitDate;
-	}
-}
-
-// return the orbit type from the hex flags value lower 5 bits
-
-function getOrbitType(flags) {
-  var typeVal = parseInt(flags,16) & 0x1F;
-  var typeNames = [
-	"Unassigned",
-	"Atir",
-        "Aten",
-        "Apollo",
-        "Amor",
-        "Object with q < 1.665 AU",
-        "Hungaria",
-        "Phocaea",
-        "Hilda",
-        "Jupiter Trojan",
-        "Distant object"
-	];
-  var returnType = (typeVal <= 10) ? typeNames[typeVal] : "";
-  return returnType;
-}
-
-// return the NEO flag from the hex flags bit 11
-
-function isNEO(flags) {
-  var typeVal = parseInt(flags,16) & 0x0800;
-  var returnType = (typeVal > 0) ? 1 : 0;
-  return returnType;
-}
-
-// return the 1km flag from the hex flags bit 12
-
-function is1KM(flags) {
-  var typeVal = parseInt(flags,16) & 0x1000;
-  var returnType = (typeVal > 0) ? 1 : 0;
-  return returnType;
-}
-
-// return the 1 opposition flag from the hex flags bit 13
-
-function is1Opp(flags) {
-  var typeVal = parseInt(flags,16) & 0x2000;
-  var returnType = (typeVal > 0) ? 1 : 0;
-  return returnType;
-}
-
-// return the critical list flag from the hex flags bit 14
-
-function isCrit(flags) {
-  var typeVal = parseInt(flags,16) & 0x4000;
-  var returnType = (typeVal > 0) ? 1 : 0;
-return returnType;
-}
-
-// return the PHA flag from the hex flags bit 15
-
-function isPHA(flags) {
-  var typeVal = parseInt(flags,16) & 0x8000;
-  var returnType = (typeVal > 0) ? 1 : 0;
-  return returnType;
-}
-	
-//function displayLineCount(count) {
-//  $('#lineCount').val(count);
-//}
-
 function init() {
 	// show the home div by default and re-show it when Home is clicked
 	$('#navHome').click(function(){
@@ -444,7 +327,7 @@ function init() {
 	    displayMoreInfo();
 	});	
 
-	document.getElementById('file-input')
+	document.getElementById('inputFileId')
   		.addEventListener('change', readSingleFile, false);
     
 	$('#sampleLineCount').val(SAMPLE_COUNT);
@@ -489,6 +372,13 @@ function init() {
   		}
     });
 
+    $('.filterSelect').each(function() {
+    	$(this).append("<option value=''></option>");
+    	for(i=0; i < FILTER_NAMES.length; i++) {
+        	$(this).append("<option value='" + FILTER_VALS[i] + "'>" + FILTER_NAMES[i] + "</option>");
+    	}
+    });
+    
 	// display home to start
 	displayHome();
 
@@ -588,6 +478,7 @@ Select sample size and add filters and the Sample button to view a subset of the
 data. Select "Data and Examples" above for more details
 and links to example files. Select "Download and More Info" to download the utility
 to run it locally.</p>
+<!--
 <div class="formGroup">
   <div class="formElem">
     <input type="file" id="file-input" />
@@ -604,7 +495,61 @@ to run it locally.</p>
   <div class="formElem">
   	<button type=button id="sampleButton">Sample</button>
    </div>
-</div>
+-->
+<form>
+<fieldset>
+	<p class="fieldP">
+		<label class="field" for="inputFile">Input File</label>
+    	<input type="file" name="inputFile" id="inputFileId"/>
+    </p>
+	<p class="fieldP">
+		<label class="field" for="fileFormat">File Format</label>
+    	<select name="fileFormat" class="obSelect">
+      		<option value="mpc-classic" selected>MPC Minor Planet Format</option>
+   		</select>
+    </p>
+	<p class="fieldP">
+		<label class="field" for="sampleLineCount">Sample Line Count</label>
+   		<input type=number name="sampleLineCount" id="sampleLineCount"/>
+    </p>
+	<p class="fieldP">
+		<label class="field" for="filter1">Filter 1</label>
+    	<select name="filter1" id="filter1Id" class="obSelect filterSelect">
+   		</select>
+   		<select name="op1" id="op1Id" class="obSelect">
+      		<option value="ge" selected>&ge;</option>
+      		<option value="eq">=</option>
+      		<option value="le">&le;</option>
+   		</select>
+   		<input type=number name="value1" id="value1Id"/>
+    </p>
+	<p class="fieldP">
+		<label class="field" for="filter2">Filter 2</label>
+    	<select name="filter2" id="filter2Id" class="obSelect filterSelect">
+   		</select>
+   		<select name="op2" id="op2Id" class="obSelect">
+      		<option value="ge" selected>&ge;</option>
+      		<option value="eq">=</option>
+      		<option value="le">&le;</option>
+   		</select>
+   		<input type=number name="value2" id="value2Id"/>
+    </p>
+	<p class="fieldP">
+		<label class="field" for="filter3">Filter 3</label>
+    	<select name="filter3" id="filter1Id" class="obSelect filterSelect">
+   		</select>
+   		<select name="op3" id="op1Id" class="obSelect">
+      		<option value="ge" selected>&ge;</option>
+      		<option value="eq">=</option>
+      		<option value="le">&le;</option>
+   		</select>
+   		<input type=number name="value3" id="value3Id"/>
+    </p>
+	<p class="fieldP"> 
+  		<button type=button id="sampleButton">Sample</button>
+	</p>
+</fieldset>
+</form>
 </div>
 <!-- ========= Data Page Content ======== -->
 <div id="divData">
@@ -635,7 +580,7 @@ Source Code: GitHub project orb-browser
 <div id="divOrbBrowser" class="ob">
 <div id="divObStatus" class="info"></div>
 <br>
-<table id="elemTable" class="display" width="100%">
+<table id="elemTable" class="display">
 	<thead>
 	<tr>
 		<th>Packed Desig</th>
