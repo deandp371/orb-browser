@@ -214,6 +214,8 @@ function doSample() {
 	orbits = [];
 	SAMPLE_INTERVAL = Math.trunc(allLines.length / SAMPLE_COUNT);
 	console.log("readFile: sample every " + SAMPLE_INTERVAL);
+	// read the filters in the form and set FILTER_DATA
+	getFilters();
 	//displayLineCount(lines.length);
 	var iorbit = 0;	// index of orbit loaded to sample table
 	for(iline = 0; iline < allLines.length; ++iline) {
@@ -271,6 +273,54 @@ function doSample() {
 	}) // end table ctor
 	tableLoaded = true;
 } // end doSample
+
+function getFilters() {
+	  var filterSet = new Object();
+	  var filter1 = $('#filter1Id').val();
+	  if( filter1 != '' ) {
+		  var op  = $('#op1Id').val();
+		  var val = $('#value1Id').val();
+		  console.log("filter 1 set: filter=" + filter1 + " op=" + op + " val=" + val);
+		  filterSet = addFilter(filterSet, filter1, op, val);
+		  console.log("filter set 1: filters=" + JSON.stringify(filterSet));
+	  }
+	  
+	  var filter2 = $('#filter2Id').val();
+	  if( filter2 != '' ) {
+		  var op  = $('#op2Id').val();
+		  var val = $('#value2Id').val();
+		  console.log("filter 2 set: filter=" + filter2 + " op=" + op + " val=" + val);
+		  filterSet = addFilter(filterSet, filter2, op, val);
+		  console.log("filter set 2: filters=" + JSON.stringify(filterSet));
+	  }
+	  
+	  var filter3 = $('#filter3Id').val();
+	  if( filter3 != '' ) {
+		  var op  = $('#op3Id').val();
+		  var val = $('#value3Id').val();
+		  console.log("filter 3 set: filter=" + filter3 + " op=" + op + " val=" + val);
+		  filterSet = addFilter(filterSet, filter3, op, val);
+		  console.log("filter set 3: filters=" + JSON.stringify(filterSet));
+	  }
+
+}
+
+function addFilter(filterSetIn, filterVal, opVal, value) {
+	var filterSetOut = filterSetIn;
+	  if( filterVal == 'h' ) {
+		  if( opVal == 'ge' ) {
+			  filterSetOut.Hmin = value;
+		  }
+		  else if( opVal == "eq" ) {
+			  filterSetOut.Heq = value;
+		  }
+		  else if( opVal == 'le' ) {
+			  filterSetOut.Hmax = value;
+		  }
+
+	  }
+	return filterSetOut;
+}
 
 function filterResult(min, max, rowValue) {
 	var result = false;
@@ -536,9 +586,9 @@ to run it locally.</p>
     </p>
 	<p class="fieldP">
 		<label class="field" for="filter3">Filter 3</label>
-    	<select name="filter3" id="filter1Id" class="obSelect filterSelect">
+    	<select name="filter3" id="filter3Id" class="obSelect filterSelect">
    		</select>
-   		<select name="op3" id="op1Id" class="obSelect">
+   		<select name="op3" id="op3Id" class="obSelect">
       		<option value="ge" selected>&ge;</option>
       		<option value="eq">=</option>
       		<option value="le">&le;</option>
