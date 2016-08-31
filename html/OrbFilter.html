@@ -215,18 +215,22 @@ function doSample() {
 	SAMPLE_INTERVAL = Math.trunc(allLines.length / SAMPLE_COUNT);
 	console.log("readFile: sample every " + SAMPLE_INTERVAL);
 	// read the filters in the form and set FILTER_DATA
-	getFilters();
+	var filterSet = getFilters();
+	console.log("filterset type=" + typeof filterSet);
 	//displayLineCount(lines.length);
 	var iorbit = 0;	// index of orbit loaded to sample table
 	for(iline = 0; iline < allLines.length; ++iline) {
 		if( iline % SAMPLE_INTERVAL != 0) {
 			continue;	
 		}
-		console.log("add line #" + iline);
+		console.log("check line #" + iline);
 		var nextLine = allLines[iline];
 		if( typeof nextLine !== 'undefined' ) {
 			var orbit = new MPOrbit(nextLine);
-			orbits[iorbit++] = orbit;
+			if( filterOrbit(orbit, filterSet) == true ) {
+				console.log("filter pass");
+				orbits[iorbit++] = orbit;				
+			}
 		}
 	}
 	//var orbitTable = $('#elemTable').DataTable();
@@ -302,24 +306,40 @@ function getFilters() {
 		  filterSet = addFilter(filterSet, filter3, op, val);
 		  console.log("filter set 3: filters=" + JSON.stringify(filterSet));
 	  }
-
+	return filterSet;
 }
 
 function addFilter(filterSetIn, filterVal, opVal, value) {
 	var filterSetOut = filterSetIn;
 	  if( filterVal == 'h' ) {
+		  console.log("add filter h");
 		  if( opVal == 'ge' ) {
 			  filterSetOut.Hmin = value;
+			  console.log("add filter Hmin");
+
 		  }
 		  else if( opVal == "eq" ) {
 			  filterSetOut.Heq = value;
+			  console.log("add filter Heq");
 		  }
 		  else if( opVal == 'le' ) {
 			  filterSetOut.Hmax = value;
+			  console.log("add filter Hmax");
 		  }
 
 	  }
 	return filterSetOut;
+}
+
+function filterOrbit(orbit, filterSet) {
+	if( typeof filterSet.Hmin !== 'undefined' ) {
+		console.log("filter Hmin =" + filterSet.Hmin);
+		if( orbit.H < filterSet.Hmin ) {
+			console.log("below Hmin " + orbit.H);
+			return false;
+		}
+	}
+	return true;
 }
 
 function filterResult(min, max, rowValue) {
