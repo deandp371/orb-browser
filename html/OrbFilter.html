@@ -334,11 +334,27 @@ function addFilter(filterSetIn, filterVal, opVal, value) {
 function filterOrbit(orbit, filterSet) {
 	if( typeof filterSet.Hmin !== 'undefined' ) {
 		console.log("filter Hmin =" + filterSet.Hmin);
-		if( orbit.H < filterSet.Hmin ) {
+		if( orbit.H <= filterSet.Hmin ) {
 			console.log("below Hmin " + orbit.H);
 			return false;
 		}
 	}
+	if( typeof filterSet.Heq !== 'undefined' ) {
+		console.log("filter Heq =" + filterSet.Heq);
+		// need delta for these?
+		if( orbit.H != filterSet.Heq ) {
+			console.log("neq Heq " + orbit.H);
+			return false;
+		}
+	}
+	if( typeof filterSet.Hmax !== 'undefined' ) {
+		console.log("filter Hmax =" + filterSet.Hmax);
+		if( orbit.H >= filterSet.Hmax ) {
+			console.log("above Hmax " + orbit.H);
+			return false;
+		}
+	}
+	
 	return true;
 }
 
