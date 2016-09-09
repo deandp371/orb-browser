@@ -179,35 +179,7 @@ function readSingleFile(e) {
 	  console.log("read end");
 
   };  // end function
-
-  // external search routine for filter search
-  /*
-  $.fn.dataTable.ext.search.push(
-    	function( settings, data, dataIndex ) {
-    		var result = 
-    			filterResult($('#hMin').val(), $('#hMax').val(), data[1]) &&
-    			filterResult($('#aMin').val(), $('#aMax').val(), data[4]) &&
-    			filterResult($('#eMin').val(), $('#eMax').val(), data[5]) &&
-    			filterResult($('#iMin').val(), $('#iMax').val(), data[6]) &&
-    			filterResult($('#nodeMin').val(), $('#nodeMax').val(), data[7]) &&
-    			filterResult($('#periMin').val(), $('#periMax').val(), data[8]) &&
-    			filterResult($('#mMin').val(), $('#mMax').val(), data[9]) &&
-    			filterResult($('#nMin').val(), $('#nMax').val(), data[10]) &&
-    			filterResult($('#uMin').val(), $('#uMax').val(), data[11]) &&
-			    filterResult($('#nobsMin').val(), $('#nobsMax').val(), data[13]) &&
-			    filterResult($('#noppsMin').val(), $('#noppsMax').val(), data[14]) &&
-		    	filterResult($('#rmsMin').val(), $('#rmsMax').val(), data[16]) &&
-	    		filterResult($('#lobsMin').val(), $('#lobsMax').val(), data[27]);
-            return result;
-        }
-  );
-  */
-
-  //$('.ranger').keyup( function() {
-	//  orbitTable.draw();
-  //} );
   reader.readAsText(file);
-  //displayOb(true);
 }  // end read file
 
 function doSample() {
@@ -309,228 +281,291 @@ function getFilters() {
 	return filterSet;
 }
 
-function addFilter(filterSetIn, filterVal, opVal, value) {
-	var filterSetOut = filterSetIn;
-	  if( filterVal == 'h' ) {
-		  console.log("add filter h");
-		  if( opVal == 'ge' ) {
-			  filterSetOut.Hmin = value;
-			  console.log("add filter Hmin");
-
-		  }
-		  else if( opVal == "eq" ) {
-			  filterSetOut.Heq = value;
-			  console.log("add filter Heq");
-		  }
-		  else if( opVal == 'le' ) {
-			  filterSetOut.Hmax = value;
-			  console.log("add filter Hmax");
-		  }
-
-	  }
-	return filterSetOut;
-}
-
-function filterOrbit(orbit, filterSet) {
-	if( typeof filterSet.Hmin !== 'undefined' ) {
-		console.log("filter Hmin =" + filterSet.Hmin);
-		if( orbit.H <= filterSet.Hmin ) {
-			console.log("below Hmin " + orbit.H);
-			return false;
+	function addFilter(filterSetIn, filterVal, opVal, value) {
+		var filterSetOut = filterSetIn;
+		if (filterVal == 'h') {
+			console.log("add filter h");
+			if (opVal == 'ge') {
+				filterSetOut.Hmin = value;
+				console.log("add filter Hmin");
+			} else if (opVal == "eq") {
+				filterSetOut.Heq = value;
+				console.log("add filter Heq");
+			} else if (opVal == 'le') {
+				filterSetOut.Hmax = value;
+				console.log("add filter Hmax");
+			}
 		}
-	}
-	if( typeof filterSet.Heq !== 'undefined' ) {
-		console.log("filter Heq =" + filterSet.Heq);
-		// need delta for these?
-		if( orbit.H != filterSet.Heq ) {
-			console.log("neq Heq " + orbit.H);
-			return false;
+		if (filterVal == 'a') {
+			if (opVal == 'ge') {
+				filterSetOut.Amin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.Aeq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.Amax = value;
+			}
 		}
-	}
-	if( typeof filterSet.Hmax !== 'undefined' ) {
-		console.log("filter Hmax =" + filterSet.Hmax);
-		if( orbit.H >= filterSet.Hmax ) {
-			console.log("above Hmax " + orbit.H);
-			return false;
+		if (filterVal == 'e') {
+			if (opVal == 'ge') {
+				filterSetOut.Emin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.Eeq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.Emax = value;
+			}
 		}
-	}
-	
-	return true;
-}
-
-function filterResult(min, max, rowValue) {
-	var result = false;
-    var val = parseFloat( rowValue ) || -1;
-
-    if ( ( min == '' && max == '' ) ||
-         ( min == '' && val <= max ) ||
-         ( min <= val && '' == max ) ||
-         ( min <= val && val <= max ) )
-    {
-        result = true;
-    }
-    return result;	
-}
-
-function init() {
-	// show the home div by default and re-show it when Home is clicked
-	$('#navHome').click(function(){
-		// toggle the nav buttons
-	    $('#navHome').addClass('active');
-	    $('#navData').removeClass('active');
-	    $('#navMoreInfo').removeClass('active');
-	    $('#navOrbFilter').removeClass('active');
-	    
-	    displayHome();
-	});	
-	
-	// hide the table by default and show it when 
-	$('#navOrbFilter').click(function(){
 		
-	    $('#navOrbFilter').addClass('active');
-	    $('#navHome').removeClass('active');
-	    $('#navData').removeClass('active');
-	    $('#navMoreInfo').removeClass('active');
-	    
-	    displayOb(false);
-	});	
-	
-	$('#navData').click(function(){
-	    $('#navHome').removeClass('active');
-	    $('#navData').addClass('active');
-	    $('#navMoreInfo').removeClass('active');
-	    $('#navOrbFilter').removeClass('active');
-	    
-	    displayData();
-	});	
-	
-	$('#navMoreInfo').click(function(){
-	    $('#navHome').removeClass('active');
-	    $('#navData').removeClass('active');
-	    $('#navMoreInfo').addClass('active');
-	    $('#navOrbFilter').removeClass('active');
-	    
-	    displayMoreInfo();
-	});	
+		return filterSetOut;
+	}
 
-	document.getElementById('inputFileId')
-  		.addEventListener('change', readSingleFile, false);
-    
-	$('#sampleLineCount').val(SAMPLE_COUNT);
-	$("#sampleButton").click(function() {
-		console.log("start sample size=" + SAMPLE_COUNT);
-		doSample();
-		displayOb(true);
+	function filterOrbit(orbit, filterSet) {
+
+		if (typeof filterSet.Hmin !== 'undefined') {
+			console.log("filter Hmin =" + filterSet.Hmin);
+			if (orbit.H <= filterSet.Hmin) {
+				console.log("below Hmin " + orbit.H);
+				return false;
+			}
+		}
+		if (typeof filterSet.Heq !== 'undefined') {
+			console.log("filter Heq =" + filterSet.Heq);
+			// need delta for these?
+			if (orbit.H != filterSet.Heq) {
+				console.log("neq Heq " + orbit.H);
+				return false;
+			}
+		}
+		if (typeof filterSet.Hmax !== 'undefined') {
+			console.log("filter Hmax =" + filterSet.Hmax);
+			if (orbit.H >= filterSet.Hmax) {
+				console.log("above Hmax " + orbit.H);
+				return false;
+			}
+		}
+
+		if (typeof filterSet.Amin !== 'undefined') {
+			console.log("filter Amin =" + filterSet.Amin);
+			if (orbit.a <= filterSet.Amin) {
+				console.log("below Amin " + orbit.a);
+				return false;
+			}
+		}
+		if (typeof filterSet.Aeq !== 'undefined') {
+			console.log("filter Aeq =" + filterSet.Aeq);
+			// need delta for these?
+			if (orbit.a != filterSet.Aeq) {
+				console.log("neq Aeq " + orbit.a);
+				return false;
+			}
+		}
+		if (typeof filterSet.Amax !== 'undefined') {
+			console.log("filter Amax =" + filterSet.Amax);
+			if (orbit.a >= filterSet.Amax) {
+				console.log("above Amax " + orbit.a);
+				return false;
+			}
+		}
+
+		if (typeof filterSet.Emin !== 'undefined') {
+			if (orbit.e <= filterSet.Emin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.Eeq !== 'undefined') {
+			if (orbit.e != filterSet.Eeq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.Emax !== 'undefined') {
+			if (orbit.e >= filterSet.Emax) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	function filterResult(min, max, rowValue) {
+		var result = false;
+		var val = parseFloat(rowValue) || -1;
+
+		if ((min == '' && max == '') || (min == '' && val <= max)
+				|| (min <= val && '' == max) || (min <= val && val <= max)) {
+			result = true;
+		}
+		return result;
+	}
+
+	function init() {
+		// show the home div by default and re-show it when Home is clicked
+		$('#navHome').click(function() {
+			// toggle the nav buttons
+			$('#navHome').addClass('active');
+			$('#navData').removeClass('active');
+			$('#navMoreInfo').removeClass('active');
+			$('#navOrbFilter').removeClass('active');
+
+			displayHome();
+		});
+
+		// hide the table by default and show it when 
+		$('#navOrbFilter').click(function() {
+
+			$('#navOrbFilter').addClass('active');
+			$('#navHome').removeClass('active');
+			$('#navData').removeClass('active');
+			$('#navMoreInfo').removeClass('active');
+
+			displayOb(false);
+		});
+
+		$('#navData').click(function() {
+			$('#navHome').removeClass('active');
+			$('#navData').addClass('active');
+			$('#navMoreInfo').removeClass('active');
+			$('#navOrbFilter').removeClass('active');
+
+			displayData();
+		});
+
+		$('#navMoreInfo').click(function() {
+			$('#navHome').removeClass('active');
+			$('#navData').removeClass('active');
+			$('#navMoreInfo').addClass('active');
+			$('#navOrbFilter').removeClass('active');
+
+			displayMoreInfo();
+		});
+
+		document.getElementById('inputFileId').addEventListener('change',
+				readSingleFile, false);
+
+		$('#sampleLineCount').val(SAMPLE_COUNT);
+		$("#sampleButton").click(function() {
+			console.log("start sample size=" + SAMPLE_COUNT);
+			doSample();
+			displayOb(true);
+		});
+
+		$("#downloadTsv").click(
+				function() {
+					var tab = "\t";
+
+					var tsvData = "Packed Desig" + tab + "H" + tab + "G" + tab
+							+ "Epoch" + tab + "a" + tab + "e" + tab + "i" + tab
+							+ "Node" + tab + "Peri" + tab + "M" + tab + "n"
+							+ tab + "U" + tab + "Ref" + tab + "Num_obs" + tab
+							+ "Num_opps" + tab + "Arc Yrs/Len" + tab + "rms"
+							+ tab + "Perturbers" + tab + "Perturbers_2" + tab
+							+ "Hex_flags" + tab + "Orbit_type" + tab
+							+ "NEO_flag" + tab + "One_km_flag" + tab
+							+ "One_opp_flag" + tab + "Crit_flag" + tab
+							+ "PHA_flag" + tab + "Designation" + tab
+							+ "Last_obs" + tab + "\n";
+
+					if (typeof filteredData !== 'undefined') {
+						console.log("download tsv row count="
+								+ filteredData.length);
+						for (var i = 0; i < filteredData.length; i++) {
+							tsvData += filteredData[i].toTSV();
+							tsvData += "\n";
+						}
+						download_file(tsvData, "tsv-export.txt");
+					}
+				});
+
+		$("#downloadMpc").click(function() {
+
+			if (typeof filteredData !== 'undefined') {
+				console.log("download mpc row count=" + filteredData.length);
+				var mpcData = "";
+				for (var i = 0; i < filteredData.length; i++) {
+					mpcData += filteredData[i].line;
+					mpcData += "\n";
+				}
+				download_file(mpcData, "mpc-export.txt");
+			}
+		});
+
+		$('.filterSelect').each(
+				function() {
+					$(this).append("<option value=''></option>");
+					for (i = 0; i < FILTER_NAMES.length; i++) {
+						$(this).append(
+								"<option value='" + FILTER_VALS[i] + "'>"
+										+ FILTER_NAMES[i] + "</option>");
+					}
+				});
+
+		// display home to start
+		displayHome();
+
+	}
+
+	function displayHome() {
+		$('#divHome').show();
+		$('#divData').hide();
+		$('#divMoreInfo').hide();
+		$('#divOrbBrowser').hide();
+	}
+
+	function displayOb(isDataLoaded) {
+		console.log("displayOb loaded=" + isDataLoaded);
+		$('#divHome').hide();
+		$('#divData').hide();
+		$('#divMoreInfo').hide();
+		$('#divOrbBrowser').show();
+
+		if (isDataLoaded) {
+			$('#divObStatus')
+					.html(
+							"Table Loaded: filter numeric fields by entering a min value in the table footer "
+									+ "in the box labeled &ge; and/or a max valie in the box labeled &le;. Categorical fields "
+									+ "have a pulldown menu for available values");
+		} else {
+			$('#divObStatus').html("Table Loading");
+
+		}
+	}
+
+	function displayData() {
+		$('#divHome').hide();
+		$('#divData').show();
+		$('#divMoreInfo').hide();
+		$('#divOrbBrowser').hide();
+	}
+
+	function displayMoreInfo() {
+		$('#divHome').hide();
+		$('#divData').hide();
+		$('#divMoreInfo').show();
+		$('#divOrbBrowser').hide();
+	}
+
+	function download_file(fileData, filename) {
+		var blob = new Blob([ fileData ], {
+			type : 'text/plain;charset=utf-8;'
+		});
+		if (navigator.msSaveBlob) { // IE 10+
+			navigator.msSaveBlob(blob, filename);
+		} else {
+			var link = document.createElement("a");
+			if (link.download !== undefined) { // feature detection
+				// Browsers that support HTML5 download attribute
+				var url = URL.createObjectURL(blob);
+				link.setAttribute("href", url);
+				link.setAttribute("download", filename);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			}
+		}
+	}
+
+	$(document).ready(function() {
+		init();
 	});
-	
-    $( "#downloadTsv" ).click(function() {
-  		var tab = "\t";
-  		
-		var tsvData = 
-			"Packed Desig" +tab + "H" +tab + "G" +tab + "Epoch" +tab +
-			"a" +tab + "e" +tab + "i" +tab + "Node" +tab +
-			"Peri" +tab + "M" +tab + "n" +tab + "U" +tab +
-			"Ref" +tab + "Num_obs" +tab + "Num_opps" +tab + "Arc Yrs/Len" +tab +
-			"rms" +tab + "Perturbers" +tab + "Perturbers_2" +tab + "Hex_flags" +tab +
-			"Orbit_type" +tab + "NEO_flag" +tab + "One_km_flag" +tab + "One_opp_flag" +tab +
-			"Crit_flag" +tab + "PHA_flag" +tab + "Designation" +tab + "Last_obs" +tab + "\n";
-
-  		if( typeof filteredData !== 'undefined' ) {
-  			console.log("download tsv row count=" + filteredData.length);
-  			for (var i = 0; i < filteredData.length; i++) {
-				tsvData += filteredData[i].toTSV();
-				tsvData += "\n";
-  			}
-  			download_file(tsvData, "tsv-export.txt");
-  		}
-    });
-
-    $( "#downloadMpc" ).click(function() {
-
-  		if( typeof filteredData !== 'undefined' ) {
-  			console.log("download mpc row count=" + filteredData.length);
-  			var mpcData = "";
-  			for (var i = 0; i < filteredData.length; i++) {
-  				mpcData += filteredData[i].line;
-  				mpcData += "\n";
-  			}
-  			download_file(mpcData, "mpc-export.txt");
-  		}
-    });
-
-    $('.filterSelect').each(function() {
-    	$(this).append("<option value=''></option>");
-    	for(i=0; i < FILTER_NAMES.length; i++) {
-        	$(this).append("<option value='" + FILTER_VALS[i] + "'>" + FILTER_NAMES[i] + "</option>");
-    	}
-    });
-    
-	// display home to start
-	displayHome();
-
-}
-
-function displayHome() {
-    $('#divHome').show();
-    $('#divData').hide();
-    $('#divMoreInfo').hide();
-    $('#divOrbBrowser').hide();	
-}
-
-function displayOb(isDataLoaded) {
-	console.log("displayOb loaded=" + isDataLoaded);
-    $('#divHome').hide();
-    $('#divData').hide();
-    $('#divMoreInfo').hide();
-    $('#divOrbBrowser').show();
-    
-    if( isDataLoaded ) {
-    	  $('#divObStatus').html("Table Loaded: filter numeric fields by entering a min value in the table footer " +
-    			  "in the box labeled &ge; and/or a max valie in the box labeled &le;. Categorical fields "
-    			  + "have a pulldown menu for available values");
-    }
-    else {
-  	  $('#divObStatus').html("Table Loading");
-    	
-    }
-}
-
-function displayData() {
-    $('#divHome').hide();
-    $('#divData').show();
-    $('#divMoreInfo').hide();
-    $('#divOrbBrowser').hide();	
-}
-
-function displayMoreInfo() {
-    $('#divHome').hide();
-    $('#divData').hide();
-    $('#divMoreInfo').show();
-    $('#divOrbBrowser').hide();	
-}
-
-function download_file(fileData, filename) {
-	var blob = new Blob([fileData], { type: 'text/plain;charset=utf-8;' });
-    if (navigator.msSaveBlob) { // IE 10+
-        navigator.msSaveBlob(blob, filename);
-    } else {
-        var link = document.createElement("a");
-        if (link.download !== undefined) { // feature detection
-            // Browsers that support HTML5 download attribute
-            var url = URL.createObjectURL(blob);
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-}
-
-$( document ).ready(function() {
-	init();
-});
 </script>
 </head>
 <body>
