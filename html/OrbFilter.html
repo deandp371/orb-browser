@@ -283,105 +283,498 @@ function getFilters() {
 
 	function addFilter(filterSetIn, filterVal, opVal, value) {
 		var filterSetOut = filterSetIn;
+		
 		if (filterVal == 'h') {
 			console.log("add filter h");
 			if (opVal == 'ge') {
-				filterSetOut.Hmin = value;
-				console.log("add filter Hmin");
+				filterSetOut.hMin = value;
+				console.log("add filter hMin");
 			} else if (opVal == "eq") {
-				filterSetOut.Heq = value;
-				console.log("add filter Heq");
+				filterSetOut.hEq = value;
+				console.log("add filter hEq");
 			} else if (opVal == 'le') {
-				filterSetOut.Hmax = value;
-				console.log("add filter Hmax");
-			}
-		}
-		if (filterVal == 'a') {
-			if (opVal == 'ge') {
-				filterSetOut.Amin = value;
-			} else if (opVal == "eq") {
-				filterSetOut.Aeq = value;
-			} else if (opVal == 'le') {
-				filterSetOut.Amax = value;
-			}
-		}
-		if (filterVal == 'e') {
-			if (opVal == 'ge') {
-				filterSetOut.Emin = value;
-			} else if (opVal == "eq") {
-				filterSetOut.Eeq = value;
-			} else if (opVal == 'le') {
-				filterSetOut.Emax = value;
+				filterSetOut.hMax = value;
+				console.log("add filter hMax");
 			}
 		}
 		
+		if (filterVal == 'a') {
+			if (opVal == 'ge') {
+				filterSetOut.aMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.aEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.aMax = value;
+			}
+		}
+		
+		if (filterVal == 'e') {
+			if (opVal == 'ge') {
+				filterSetOut.eMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.eEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.eMax = value;
+			}
+		}
+		
+		if (filterVal == 'i') {
+			if (opVal == 'ge') {
+				filterSetOut.iMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.iEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.iMax = value;
+			}
+		}
+		
+		if (filterVal == 'node') {
+			if (opVal == 'ge') {
+				filterSetOut.nodeMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.nodeEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.nodeMax = value;
+			}
+		}
+		
+		if (filterVal == 'peri') {
+			if (opVal == 'ge') {
+				filterSetOut.periMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.periEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.periMax = value;
+			}
+		}
+
+		if (filterVal == 'm') {
+			if (opVal == 'ge') {
+				filterSetOut.mMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.mEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.mMax = value;
+			}
+		}
+		if (filterVal == 'n') {
+			if (opVal == 'ge') {
+				filterSetOut.nMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.nEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.nMax = value;
+			}
+		}
+		
+		if (filterVal == 'u') {
+			if (opVal == 'ge') {
+				filterSetOut.uMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.uEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.uMax = value;
+			}
+		}
+		
+		if (filterVal == 'nobs') {
+			if (opVal == 'ge') {
+				filterSetOut.nobsMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.nobsEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.nobsMax = value;
+			}
+		}
+
+		if (filterVal == 'nopps') {
+			if (opVal == 'ge') {
+				filterSetOut.noppsMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.noppsEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.noppsMax = value;
+			}
+		}
+
+		if (filterVal == 'rms') {
+			if (opVal == 'ge') {
+				filterSetOut.rmsMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.rmsEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.rmsMax = value;
+			}
+		}
+		
+		if (filterVal == 'type') {
+			if (opVal == 'ge') {
+				filterSetOut.typeMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.typeEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.typeMax = value;
+			}
+		}
+		
+		if (filterVal == 'neoFlag') {
+			if (opVal == 'ge') {
+				filterSetOut.neoFlagMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.neoFlagEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.neoFlagMax = value;
+			}
+		}
+		
+		if (filterVal == 'km1Flag') {
+			if (opVal == 'ge') {
+				filterSetOut.km1FlagMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.km1FlagEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.km1FlagMax = value;
+			}
+		}
+
+		if (filterVal == 'critFlag') {
+			if (opVal == 'ge') {
+				filterSetOut.critFlagMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.critFlagEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.critFlagMax = value;
+			}
+		}
+
+		if (filterVal == 'phaFlag') {
+			if (opVal == 'ge') {
+				filterSetOut.phaFlagMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.phaFlagEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.phaFlagMax = value;
+			}
+		}
+
+		if (filterVal == 'lastObs') {
+			if (opVal == 'ge') {
+				filterSetOut.lastObsMin = value;
+			} else if (opVal == "eq") {
+				filterSetOut.lastObsEq = value;
+			} else if (opVal == 'le') {
+				filterSetOut.lastObsMax = value;
+			}
+		}
+
 		return filterSetOut;
 	}
 
 	function filterOrbit(orbit, filterSet) {
 
-		if (typeof filterSet.Hmin !== 'undefined') {
-			console.log("filter Hmin =" + filterSet.Hmin);
-			if (orbit.H <= filterSet.Hmin) {
-				console.log("below Hmin " + orbit.H);
+		if (typeof filterSet.hMin !== 'undefined') {
+			console.log("filter hMin =" + filterSet.hMin);
+			if (orbit.H <= filterSet.hMin) {
+				console.log("below hMin " + orbit.H);
 				return false;
 			}
 		}
-		if (typeof filterSet.Heq !== 'undefined') {
-			console.log("filter Heq =" + filterSet.Heq);
+		if (typeof filterSet.hEq !== 'undefined') {
+			console.log("filter hEq =" + filterSet.hEq);
 			// need delta for these?
-			if (orbit.H != filterSet.Heq) {
-				console.log("neq Heq " + orbit.H);
+			if (orbit.H != filterSet.hEq) {
+				console.log("neq hEq " + orbit.H);
 				return false;
 			}
 		}
-		if (typeof filterSet.Hmax !== 'undefined') {
-			console.log("filter Hmax =" + filterSet.Hmax);
-			if (orbit.H >= filterSet.Hmax) {
-				console.log("above Hmax " + orbit.H);
+		if (typeof filterSet.hMax !== 'undefined') {
+			console.log("filter hMax =" + filterSet.hMax);
+			if (orbit.H >= filterSet.hMax) {
+				console.log("above hMax " + orbit.H);
 				return false;
 			}
 		}
 
-		if (typeof filterSet.Amin !== 'undefined') {
-			console.log("filter Amin =" + filterSet.Amin);
-			if (orbit.a <= filterSet.Amin) {
-				console.log("below Amin " + orbit.a);
+		if (typeof filterSet.aMin !== 'undefined') {
+			console.log("filter aMin =" + filterSet.aMin);
+			if (orbit.a <= filterSet.aMin) {
+				console.log("below aMin " + orbit.a);
 				return false;
 			}
 		}
-		if (typeof filterSet.Aeq !== 'undefined') {
-			console.log("filter Aeq =" + filterSet.Aeq);
+		if (typeof filterSet.aEq !== 'undefined') {
+			console.log("filter aEq =" + filterSet.aEq);
 			// need delta for these?
-			if (orbit.a != filterSet.Aeq) {
-				console.log("neq Aeq " + orbit.a);
+			if (orbit.a != filterSet.aEq) {
+				console.log("neq aEq " + orbit.a);
 				return false;
 			}
 		}
-		if (typeof filterSet.Amax !== 'undefined') {
-			console.log("filter Amax =" + filterSet.Amax);
-			if (orbit.a >= filterSet.Amax) {
-				console.log("above Amax " + orbit.a);
-				return false;
-			}
-		}
-
-		if (typeof filterSet.Emin !== 'undefined') {
-			if (orbit.e <= filterSet.Emin) {
-				return false;
-			}
-		}
-		if (typeof filterSet.Eeq !== 'undefined') {
-			if (orbit.e != filterSet.Eeq) {
-				return false;
-			}
-		}
-		if (typeof filterSet.Emax !== 'undefined') {
-			if (orbit.e >= filterSet.Emax) {
+		if (typeof filterSet.aMax !== 'undefined') {
+			console.log("filter aMax =" + filterSet.aMax);
+			if (orbit.a >= filterSet.aMax) {
+				console.log("above aMax " + orbit.a);
 				return false;
 			}
 		}
 
+		if (typeof filterSet.eMin !== 'undefined') {
+			if (orbit.e <= filterSet.eMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.eEq !== 'undefined') {
+			if (orbit.e != filterSet.eEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.eMax !== 'undefined') {
+			if (orbit.e >= filterSet.eMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.iMin !== 'undefined') {
+			if (orbit.i <= filterSet.iMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.iEq !== 'undefined') {
+			if (orbit.i != filterSet.iEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.iMax !== 'undefined') {
+			if (orbit.i >= filterSet.iMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.nodeMin !== 'undefined') {
+			if (orbit.node <= filterSet.nodeMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nodeEq !== 'undefined') {
+			if (orbit.node != filterSet.nodeEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nodeMax !== 'undefined') {
+			if (orbit.node >= filterSet.nodeMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.periMin !== 'undefined') {
+			if (orbit.peri <= filterSet.periMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.periEq !== 'undefined') {
+			if (orbit.peri != filterSet.periEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.periMax !== 'undefined') {
+			if (orbit.peri >= filterSet.periMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.mMin !== 'undefined') {
+			console.log("check mMin=" + filterSet.mMin + " val=" + orbit.m);
+			if (orbit.M <= filterSet.mMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.mEq !== 'undefined') {
+			if (orbit.M != filterSet.mEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.mMax !== 'undefined') {
+			if (orbit.M >= filterSet.mMax) {
+				return false;
+			}
+		}
+		
+		if (typeof filterSet.nMin !== 'undefined') {
+			if (orbit.n <= filterSet.nMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nEq !== 'undefined') {
+			if (orbit.n != filterSet.nEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nMax !== 'undefined') {
+			if (orbit.n >= filterSet.nMax) {
+				return false;
+			}
+		}
+		
+		if (typeof filterSet.uMin !== 'undefined') {
+			if (orbit.U <= filterSet.uMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.uEq !== 'undefined') {
+			if (orbit.U != filterSet.uEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.uMax !== 'undefined') {
+			if (orbit.U >= filterSet.uMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.nobsMin !== 'undefined') {
+			if (orbit.nobs <= filterSet.nobsMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nobsEq !== 'undefined') {
+			if (orbit.nobs != filterSet.nobsEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.nobsMax !== 'undefined') {
+			if (orbit.nobs >= filterSet.nobsMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.noppsMin !== 'undefined') {
+			if (orbit.nopps <= filterSet.noppsMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.noppsEq !== 'undefined') {
+			if (orbit.nopps != filterSet.noppsEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.noppsMax !== 'undefined') {
+			if (orbit.nopps >= filterSet.noppsMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.rmsMin !== 'undefined') {
+			if (orbit.rms <= filterSet.nodeMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.rmsEq !== 'undefined') {
+			if (orbit.rms != filterSet.rmsEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.rmsMax !== 'undefined') {
+			if (orbit.rms >= filterSet.rmsMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.typeMin !== 'undefined') {
+			if (orbit.type <= filterSet.typeMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.typeEq !== 'undefined') {
+			if (orbit.type != filterSet.typeEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.typeMax !== 'undefined') {
+			if (orbit.type >= filterSet.typeMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.neoFlagMin !== 'undefined') {
+			if (orbit.neoFlag <= filterSet.neoFlagMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.neoFlagEq !== 'undefined') {
+			if (orbit.neoFlag != filterSet.neoFlagEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.neoFlagMax !== 'undefined') {
+			if (orbit.neoFlag >= filterSet.neoFlagMax) {
+				return false;
+			}
+		}
+
+		if (typeof filterSet.km1FlagMin !== 'undefined') {
+			if (orbit.km1Flag <= filterSet.km1FlagMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.km1FlagEq !== 'undefined') {
+			if (orbit.km1Flag != filterSet.km1FlagEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.km1FlagMax !== 'undefined') {
+			if (orbit.km1Flag >= filterSet.km1FlagMax) {
+				return false;
+			}
+		}
+		
+		if (typeof filterSet.critFlagMin !== 'undefined') {
+			if (orbit.critFlag <= filterSet.critFlagMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.critFlagEq !== 'undefined') {
+			if (orbit.critFlag != filterSet.critFlagEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.critFlagMax !== 'undefined') {
+			if (orbit.critFlag >= filterSet.critFlagMax) {
+				return false;
+			}
+		}
+		
+		if (typeof filterSet.phaFlagMin !== 'undefined') {
+			if (orbit.phaFlag <= filterSet.phaFlagMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.phaFlagEq !== 'undefined') {
+			if (orbit.phaFlag != filterSet.phaFlagEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.phaFlagMax !== 'undefined') {
+			if (orbit.phaFlag >= filterSet.phaFlagMax) {
+				return false;
+			}
+		}
+		
+		if (typeof filterSet.lastObsMin !== 'undefined') {
+			if (orbit.lastObs <= filterSet.lastObsMin) {
+				return false;
+			}
+		}
+		if (typeof filterSet.lastObsEq !== 'undefined') {
+			if (orbit.lastObs != filterSet.lastObsEq) {
+				return false;
+			}
+		}
+		if (typeof filterSet.lastObsMax !== 'undefined') {
+			if (orbit.lastObs >= filterSet.lastObsMax) {
+				return false;
+			}
+		}
+		
 		return true;
 	}
 
