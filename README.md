@@ -8,10 +8,10 @@ use and modify the utility in your own web sites or applications.
  
 Author: David P Dean
 Contact: deandp371@gmail.com
-Version: 0.5 beta
-Date: 2016-07-11
+Version: 1.0
+Date: 2016-12-29
 License: Open Source under the Apache 2.0 License
-Demo site: TBD
+Demo site: http://near-earth.net
 Source Code: GitHub project orb-browser
 
 References:
